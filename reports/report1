@@ -81,6 +81,24 @@ This week I researched some of the Chat gpt API. I looked into the capabilities 
 - Start developing the high level concepts that will serve as the foundation for our extension.
 - Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
 
+## Aishah Vakil
+
+### Goals
+
+Research! Think more about our main tasks on hand (Editing a file with an extension and incorporating AI)
+
+### Progress
+
+This week I looked into the different capabilities of VSCode extensions. I’m trying to learn more about how we can frame our project on the viewer side (what this would look like in terms of actually interacting with EasyPrint from within VSCode.)
+
+### Plans
+
+Help out with developing the basic VSCode extension - to be completed by Oct. 20th
+Designing the functions for the basic tasks we want to accomplish (adding simple comments) - carrying into next week
+Research how we can build the UI to be seamlessly integrated with VSCode - carrying into next week
+
+
+
 ## Vidyaaranya Macha
 
 ### Goals
