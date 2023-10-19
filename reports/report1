@@ -1,0 +1,82 @@
+# Team Report
+
+## Goals
+
+**First week** - none
+
+## Progress
+
+- We’ve outlined the team roles and will begin to work towards our first milestone
+- Played around with yeoman - the tool for creating a basic vs code extension
+- Begun to research AI models and potential challenges regarding this
+- Discussed and clarified potential functionality for the project
+- Met everyone on the team!*
+
+## Plans
+
+First order of business is to create a very basic vscode extension that:
+
+- Trivially modifies code (e.g. by adding `//` at the end of the line)
+- Provides option to modify highlighted code via system dropdown menu
+
+Further steps towards milestone 1:
+
+- Design and plan the architecture for our application
+- Design major user flows and visuals
+- Sign up for the GPT 3.5 API and try to make our first call to it
+- Create simple prompts that generate usable print statements
+
+# Personal Reports
+
+## Akash Prasad
+
+### Goals
+
+**First week** - none
+
+### Progress
+
+- Worked on first steps in developing the vs code extension - working with Yoeman to start this process
+- Some difficulties setting up yeoman - could have future difficulties syncing up the git repo
+- Perhaps may have to redo this process 
+
+### Plans
+
+- Develop a very basic vs code extension - by October 20th 
+- Set up the Chat GPT 3.5 API - get the key for making a call - by next week
+- Try to make first call into the API - by next week
+
+## Tyler Gee
+
+### Goals
+
+**First week** - none
+
+### Progress
+
+- Played around with GPT-3.5, discovered strengths and limitations which helped to inform use cases
+- Requires specific goal for meaningful output (i.e. track this variable, add print statements to show branch coverage, etc.)
+- Weak at handling multiple instructions (we should keep goals focused in scope)
+- Large variety in output (we can mitigate this by reducing temperature in the API)
+- Conclusion - we need to reduce scope of usage and have simple instructions for each query
+- Worked on first steps in developing the vs code extension
+
+### Plans
+
+- Design UI with basic use cases and flows - by end of weekend
+
+## Tyler R
+
+### Goals
+
+Nothing to report. For last week’s tasks.
+
+### Progress
+
+This week I researched some of the Chat gpt API. I looked into the capabilities of vs code and how to create an extension. I also researched the capabilities of the generative AI and the abilities to get expected feedback from a generative AI model
+
+### Plans
+
+- Start designing the functions for some of our features.
+- Start developing the high level concepts that will serve as the foundation for our extension.
+- Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
