@@ -80,3 +80,20 @@ This week I researched some of the Chat gpt API. I looked into the capabilities 
 - Start designing the functions for some of our features.
 - Start developing the high level concepts that will serve as the foundation for our extension.
 - Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
+
+## Vidyaaranya Macha
+
+### Goals
+
+**First week** - None
+
+### Progress
+- Researched best practices for designing user-friendly code editing tools and extensions.
+- Came up with high-level requirements for the tool from the point of view of the customer.
+- Started looking at how to build vs code extension using yeoman for scaffolding the same.
+
+### Plans
+- Create a preliminary outline of the features and functionalities the interface will need to support.
+- Collaborate with the backend developer to align the front-end design with the tool's functionality.
+- Refine the list of features and user interactions based on feedback and evolving project requirements.
+- Aim to start the implementation of the front-end interface as soon as the ideation stage is finalized.
