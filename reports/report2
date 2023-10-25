@@ -1,1 +1,42 @@
+# Team Report
 
+## Goals
+- Trivially modifies code (e.g. by adding `//` at the end of the line)
+- Provides option to modify highlighted code via system dropdown menu
+
+Further steps towards milestone 1:
+
+- Design and plan the architecture for our application
+- Design major user flows and visuals
+- Sign up for the GPT 3.5 API and try to make our first call to it
+- Create simple prompts that generate usable print statements
+
+
+## Progress
+As part of our milestone project, we have developed our architecture and have designed the user flows and visual representation of our
+design. We have signed up for GPT 3.5 API and plan to make our first call very soon. We started to research how to create and build an 
+extension and started playing around with the available tools. 
+
+## Plans
+
+- Build a basic version of the software that can modify or add very basic text like "//". 
+
+# Individual Contributions
+
+##Tyler R
+
+###Goals
+
+- Start designing the functions for some of our features.
+- Start developing the high level concepts that will serve as the foundation for our extension.
+- Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
+
+###Progress
+This week I started to plan out some high level program details that can be coded into our extension once the coding starts. I did research more into the AI interfaces and set up an account to 
+generate an API key that is necessary in order to integrate the AI APIs. I started making progress on the vs code APIs and started to develop a plan for calls to functions in vs code that may 
+be useful or relevant to this project. 
+
+###Plans
+- Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
+- build a basic extension so that we can start developing the software and build upon a base functional program.
+-develop the classes and modules and start planning the backend functions for the features we plan to integrate.
