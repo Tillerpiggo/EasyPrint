@@ -61,6 +61,7 @@ Further steps towards milestone 1:
 
 ### Plans
 - Create simple prompts that generate usable print statements
+- Work on Print Statement Generator class, including Prompt Generator and Response Parser, leaving API Controller for someone else to implement
 
 ## Tyler R
 
