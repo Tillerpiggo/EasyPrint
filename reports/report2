@@ -61,7 +61,7 @@ Further steps towards milestone 1:
 
 ### Plans
 - Create simple prompts that generate usable print statements
-- Work on Print Statement Generator class, including Prompt Generator and Response Parser, leaving API Controller for someone else to implement
+- Collaborate with Macha and work on Print Statement Generator class, including Prompt Generator, Response Parser and API Controller.
 
 ## Tyler R
 
@@ -78,6 +78,24 @@ be useful or relevant to this project.
 
 ### Plans
 - Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
-- build a basic extension so that we can start developing the software and build upon a base functional program.
--develop the classes and modules and start planning the backend functions for the features we plan to integrate.
+- Build a basic extension so that we can start developing the software and build upon a base functional program.
+- Develop the classes and modules and start planning the backend functions for the features we plan to integrate.
 - Start working on the API controller to make API calls to gpt 3.5
+
+## Vidyaaranya Macha
+
+### Goals
+- Create a preliminary outline of the features and functionalities the interface will need to support.
+- Collaborate with the backend developer to align the front-end design with the tool's functionality.
+- Refine the list of features and user interactions based on feedback and evolving project requirements.
+- Aim to start the implementation of the front-end interface as soon as the ideation stage is finalized.
+
+### Progress
+- Compiled a list of features and functionalities that would be part of the interface.
+- Brainstormed to devise a range of ideas for test cases spanning from evaluating basic functions to assessing high-level systems, and also considered usability from a user-centric perspective.
+- Identified the major risks associated with the project and formulated strategies to mitigate them.
+- Researched AI APIs that can modify the input code to generate print statements. Leveraged OpenAI’s playground application to gain insight into potential prompt templates.
+
+### Plans
+- Collaborate with Tyler and work on the Print Statement Generator class, including Prompt Generator, Response Parser, and API Controller.
+
