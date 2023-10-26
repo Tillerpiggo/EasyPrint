@@ -80,3 +80,4 @@ be useful or relevant to this project.
 - Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
 - build a basic extension so that we can start developing the software and build upon a base functional program.
 -develop the classes and modules and start planning the backend functions for the features we plan to integrate.
+- Start working on the API controller to make API calls to gpt 3.5
