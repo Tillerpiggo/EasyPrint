@@ -1,0 +1,4 @@
+2023-10-26 15:18:02.948 [info] update#setState disabled
+2023-10-26 15:18:02.949 [info] update#ctor - updates are disabled by the environment
+2023-10-26 15:18:04.203 [info] WSL is not installed, so could not detect WSL profiles
+2023-10-26 15:18:04.869 [info] Extension host with pid 18340 exited with code: 0, signal: unknown.

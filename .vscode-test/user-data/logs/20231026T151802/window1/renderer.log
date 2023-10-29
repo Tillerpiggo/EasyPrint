@@ -1,0 +1,9 @@
+2023-10-26 15:18:03.637 [warning] Via 'product.json#extensionEnabledApiProposals' extension 'ms-dotnettools.dotnet-interactive-vscode' wants API proposal 'languageConfigurationAutoClosingPairs' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+2023-10-26 15:18:03.637 [warning] Via 'product.json#extensionEnabledApiProposals' extension 'github.copilot-chat' wants API proposal 'terminalContextMenu' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+2023-10-26 15:18:03.862 [info] Started initializing default profile extensions in extensions installation folder. file:///c%3A/Users/tited/Desktop/School/Current%20Classes/CSE403/Project/EasyPrint/.vscode-test/extensions
+2023-10-26 15:18:04.089 [info] Completed initializing default profile extensions in extensions installation folder. file:///c%3A/Users/tited/Desktop/School/Current%20Classes/CSE403/Project/EasyPrint/.vscode-test/extensions
+2023-10-26 15:18:04.153 [info] Loading development extension at c:\Users\tited\Desktop\School\Current Classes\CSE403\Project\EasyPrint\easyprint
+2023-10-26 15:18:04.840 [info] [0m%s%s[0m  
+2023-10-26 15:18:04.840 [info] [0m%s%s[0m    Extension Test Suite
+2023-10-26 15:18:04.861 [info]   [32m  ✔[0m[90m %s[0m Sample test
+2023-10-26 15:18:04.862 [info] [92m [0m[32m %d passing[0m[90m (%s)[0m 1 13ms
