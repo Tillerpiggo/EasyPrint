@@ -1,13 +1,5 @@
-# easyprint README                                                                                                                                                                                                                                                                                                                                   
-oooooooooooo                                ooooooooo.             o8o                  .   
-`888'     `8                                `888   `Y88.           `"'                .o8   
- 888          .oooo.    .oooo.o oooo    ooo  888   .d88' oooo d8b oooo  ooo. .oo.   .o888oo 
- 888oooo8    `P  )88b  d88(  "8  `88.  .8'   888ooo88P'  `888""8P `888  `888P"Y88b    888   
- 888    "     .oP"888  `"Y88b.    `88..8'    888          888      888   888   888    888   
- 888       o d8(  888  o.  )88b    `888'     888          888      888   888   888    888 . 
-o888ooooood8 `Y888""8o 8""888P'     .8'     o888o        d888b    o888o o888o o888o   "888" 
-                                .o..P'                                                      
-                                `Y8P'                                                       
+# easyprint README                                                                                                                                                                                                                                                                                                                               
+                                                
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
