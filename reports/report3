@@ -1,0 +1,42 @@
+# Team Report
+
+## Goals
+Add basic functionality to the current VS code extension - following the same structure:
+- Trivially modifies code (e.g. by adding `//` at the end of the line)
+- Provides the option to modify highlighted code via system dropdown menu
+
+Further steps towards milestone 1:
+- Sign up for the GPT 3.5 API and try to make our first call to it
+- Create simple prompts that generate usable print statements
+
+## Progress
+
+- Created an API controller and can now send requests to GPT API
+- Setup CI for automated testing and integration
+
+
+## Plans
+- Use API controller to do more complicated prompts
+- Build a prompt generator to create complex promts to send to the AI API
+
+# Personal Reports
+
+## Tyler R
+### Goals
+- Start working on a rendering for the UI to develop the architecture of the system and how the user will interface with our system.
+- Build a basic extension so that we can start developing the software and build upon a base functional program.
+- Develop the classes and modules and start planning the backend functions for the features we plan to integrate.
+- Start working on the API controller to make API calls to gpt 3.5
+
+### Progress
+
+- Created API controller and tests that I was able to send a request and generate a predictable
+response
+- Configured testing evironment to work with our CI service.
+- Started developing modular design for backend functions
+
+### Plans
+
+- Create AI prompt generator
+- Integrate some front end features with the backend functionality
+- finish design of backend functions and implement some of the functions
