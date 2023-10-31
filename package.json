@@ -1,6 +1,12 @@
 {
   "dependencies": {
-    "openai": "^4.0.0",
-    "typescript": "^5.2.2"
+    "openai": "^4.0.0"
+  },
+  "scripts": {
+    "test": "npm --prefix ./easyprint run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "jest": "^29.7.0"
   }
 }
