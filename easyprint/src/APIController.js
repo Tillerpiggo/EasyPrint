@@ -2,6 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateResponse = void 0;
 const openai_1 = require("openai");
+// this is an API Controller that uses the GPT API to generate responses to specific prompts.
+// This controller is the backbone of the extension and performs a lot of the computations for 
+// generating text for the user.
 // Set your OpenAI API key
 const apiKey = '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';
 const openai = new openai_1.default({ apiKey });

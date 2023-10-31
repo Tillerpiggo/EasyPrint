@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+//import * as path from 'path';
+//import { runTests } from '@vscode/test-electron';
 const APIController_1 = require("../APIController");
 async function main() {
     try {
