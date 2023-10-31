@@ -1,7 +1,5 @@
-# easyprint README
-
-This is the README for your extension "easyprint". After writing up a brief description, we recommend including the following sections.
-
+# easyprint README                                                                                                                                                                                                                                                                                                                               
+                                                
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
@@ -37,7 +35,7 @@ Users appreciate release notes as you update your extension.
 
 ### 1.0.0
 
-Initial release of ...
+Initial release of EasyPrint extension for VS Code
 
 ### 1.0.1
 
