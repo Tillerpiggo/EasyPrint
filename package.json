@@ -3,7 +3,7 @@
     "openai": "^4.0.0"
   },
   "scripts": {
-    "test": "npm --prefix ./easyprint run test"
+    "test": "npm --prefix ./backend run test"
   },
   "devDependencies": {
     "typescript": "^5.2.2",
