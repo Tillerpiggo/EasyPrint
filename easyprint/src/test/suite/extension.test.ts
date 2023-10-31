@@ -18,4 +18,16 @@ const { generateResponse } = require('../../APIController');
 		  console.error('Error:', error);
 		}
 	  });
+	  test('Tests another basic response from AI API', async () => {
+		try {
+		  const response = await generateResponse("Please send me a message that says goodbye with no punctuation and all lower case");
+	  
+		  // Print the generated response
+		  expect(response).toBe("goodbye");
+		} catch (error) {
+		  console.error('Error:', error);
+		}
+	  });
+
+
 //});
