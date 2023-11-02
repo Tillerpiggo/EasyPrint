@@ -1,13 +1,14 @@
 {
   "dependencies": {
-    "openai": "^4.0.0",
-    "webpack": "^5.89.0"
+    "openai": "^4.0.0"
   },
   "scripts": {
     "test": "npm --prefix ./backend run test"
   },
   "devDependencies": {
     "jest": "^29.7.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
   }
 }
