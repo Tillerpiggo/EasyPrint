@@ -18,6 +18,17 @@
       {
         "command": "easyprint.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "easyprint.keybinding",
+        "title": "Keybinding"
+      }
+    ],
+    "keybindings" : [
+      {
+        "command": "easyprint.keybinding",
+        "key": "ctrl+alt+l",
+        "mac": "shift+cmd+f"
       }
     ]
   },

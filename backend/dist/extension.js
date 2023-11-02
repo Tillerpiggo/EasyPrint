@@ -56,10 +56,15 @@ function activate(context) {
     // The commandId parameter must match the command field in package.json
     let disposable = vscode.commands.registerCommand('easyprint.helloWorld', () => {
         // The code you place here will be executed every time your command is executed
-        // Display a message box to the user
+        // Display a message box to the userk
         vscode.window.showInformationMessage('Hello World from easyprint!');
     });
+    console.log("Wow ur at keybinding");
+    let keybinding = vscode.commands.registerCommand('easyprint.keybinding', () => {
+        vscode.window.showInformationMessage("OMG This is a keybinding that's fire");
+    });
     context.subscriptions.push(disposable);
+    context.subscriptions.push(keybinding);
 }
 exports.activate = activate;
 // This method is called when your extension is deactivated
