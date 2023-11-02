@@ -81,3 +81,20 @@ Further steps towards milestone 1:
     - Figure out how to change text in the IDE itself
 - Further steps to milestone 1
     - If the AI API is set up, assist in making basic calls to that with a extension command
+
+## Tyler Gee
+
+### Goals
+- Create simple prompts that generate usable print statements
+- Collaborate with Macha and work on Print Statement Generator class, including Prompt Generator, Response Parser and API Controller.
+
+### Progress
+- Created simple prompts for single line, for/while loop, if/else, and variable tracking
+- Worked with Macha to get significant progress on Print Statement Generator - the Prompt Generator part is done.
+    - (also with Macha) Focused efforts on the much harder part - the Code Parser
+    - Determined frameworks/general idea of how Code Parser will work & wrote preliminary code
+    - Began setting up tests for Code Parser
+
+### Plans
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting
