@@ -98,3 +98,19 @@ Further steps towards milestone 1:
 ### Plans
 - Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
 - Write Code Parser and work to integrate it with UI highlighting
+
+## Vidyaaranya Macha
+
+### Goals
+- Collaborate with Tyler and work on the Print Statement Generator class, including Prompt Generator, Response Parser, and API Controller.
+
+### Progress
+- Collaborated with Tyler to get work done on the Print Statement Generator, finish the Prompt Generator module.
+- Started writing preliminary code for the Code Parser that takes as input user action and outputs content for the prompt generator.
+- Began setting up tests for Code Parser
+- Reserached on the LangChain library that can chain together different modules of the print statement generator module - prompt generator, output parser and making API calls to the language model.
+
+### Plans
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting
+
