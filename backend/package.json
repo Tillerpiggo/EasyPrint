@@ -4,7 +4,7 @@
   "description": "An extension to easily add debugging print statements to your code",
   "version": "0.0.1",
   "engines": {
-    "vscode": "^1.83.0"
+    "vscode": "^1.69.0"
   },
   "categories": [
     "Other"
