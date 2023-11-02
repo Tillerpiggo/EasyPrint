@@ -13,11 +13,13 @@ Further steps towards milestone 1:
 
 - Created an API controller and can now send requests to GPT API
 - Setup CI for automated testing and integration
+- Have a working vs code extension - just need to merge into the current project structure
 
 
 ## Plans
 - Use API controller to do more complicated prompts
 - Build a prompt generator to create complex promts to send to the AI API
+- Merge wokring vs code extension into the current project - then tie keybindings and other methods
 
 # Personal Reports
 
@@ -57,3 +59,58 @@ Further steps towards milestone 1:
 - Research editing/deleting code functionality using VSCode API
 - Get highlighting feature to work as well as set up other keybindings
 - Assist with backend functions (manual debugging/print statement functions)
+
+## Akash Prasad
+
+### Goals
+- Get functional vs code extension:
+    - First get Hello World functional as a command
+    - Test another library method (perhaps keybinding/ or something very simple)
+- Further steps to milestone 1
+    - If the AI API is set up, assist in making basic calls to that
+
+### Progress
+- I have a functional VS code extension that:
+    - has a hello world command and 
+    - can run a notifcation on command
+- Currently need to get these changes into the current project - problems with merging
+
+### Plans
+- Merge vs code extension into current project then:
+    - Tie keybindings
+    - Figure out how to change text in the IDE itself
+- Further steps to milestone 1
+    - If the AI API is set up, assist in making basic calls to that with a extension command
+
+## Tyler Gee
+
+### Goals
+- Create simple prompts that generate usable print statements
+- Collaborate with Macha and work on Print Statement Generator class, including Prompt Generator, Response Parser and API Controller.
+
+### Progress
+- Created simple prompts for single line, for/while loop, if/else, and variable tracking
+- Worked with Macha to get significant progress on Print Statement Generator - the Prompt Generator part is done.
+    - (also with Macha) Focused efforts on the much harder part - the Code Parser
+    - Determined frameworks/general idea of how Code Parser will work & wrote preliminary code
+    - Began setting up tests for Code Parser
+
+### Plans
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting
+
+## Vidyaaranya Macha
+
+### Goals
+- Collaborate with Tyler and work on the Print Statement Generator class, including Prompt Generator, Response Parser, and API Controller.
+
+### Progress
+- Collaborated with Tyler to get work done on the Print Statement Generator, finish the Prompt Generator module.
+- Started writing preliminary code for the Code Parser that takes as input user action and outputs content for the prompt generator.
+- Began setting up tests for Code Parser
+- Reserached on the LangChain library that can chain together different modules of the print statement generator module - prompt generator, output parser and making API calls to the language model.
+
+### Plans
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting
+
