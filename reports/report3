@@ -30,8 +30,7 @@ Further steps towards milestone 1:
 
 ### Progress
 
-- Created API controller and tests that I was able to send a request and generate a predictable
-response
+- Created API controller and tests that I was able to send a request and generate a predictable response
 - Configured testing evironment to work with our CI service.
 - Started developing modular design for backend functions
 
@@ -40,3 +39,21 @@ response
 - Create AI prompt generator
 - Integrate some front end features with the backend functionality
 - finish design of backend functions and implement some of the functions
+
+
+## Aishah
+
+### Goals
+- Implement highlighting feature as an addition to the VSCode extension. 
+- To support the above goal, look into the VSCode API as well as other UI additions we can make to create a better user experience
+- Look into how we can use the VSCode extension to modify code (as well as unmodify later)
+
+### Progress
+- Have a much better idea of limitations with the UI as well as the extension itself in terms of timeline. 
+- Since the VSCode extension (super basic) is working now, we can move onto looking into editing code
+
+### Plans
+
+- Research editing/deleting code functionality using VSCode API
+- Get highlighting feature to work as well as set up other keybindings
+- Assist with backend functions (manual debugging/print statement functions)
