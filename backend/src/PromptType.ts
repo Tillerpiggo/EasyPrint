@@ -1,6 +1,6 @@
 export enum PromptType {
-    SingleLine = "SingleLine",
-    Conditional = "Conditional",
-    Loop = "Loop",
-    VariableTracking = "VariableTracking"
+  SingleLine = "SingleLine",
+  Conditional = "Conditional",
+  Loop = "Loop",
+  VariableTracking = "VariableTracking"
 }
