@@ -3,6 +3,7 @@
     "openai": "^4.0.0"
   },
   "scripts": {
+    "compile": "npm --prefix ./backend run compile",
     "test": "npm --prefix ./backend run test"
   },
   "devDependencies": {
