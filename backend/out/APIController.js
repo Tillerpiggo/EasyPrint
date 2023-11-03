@@ -1,5 +1,4 @@
 "use strict";
-// import OpenAI from 'openai';
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.APIController = void 0;
 const openai_1 = require("openai");
