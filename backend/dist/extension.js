@@ -47,20 +47,16 @@ function activate(context) {
             const text = editor.document.getText(selected);
             const APIKEY = "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";
             let backend = new BackendController_1.BackendController("filepath", APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
             backend.onHighlight(text).then(response => {
+                edit.replace(editor.document.uri, range, response);
+                vscode.workspace.applyEdit(edit);
                 vscode.window.showInformationMessage(response);
             });
             console.log("dummy dummy");
-            const startLine = selected.start;
-            const endLine = selected.end;
-            const decorationType = vscode.window.createTextEditorDecorationType({
-                backgroundColor: 'purple',
-            });
-            const range = new vscode.Range(startLine, endLine);
-            const decorations = [
-                { range, hoverMessage: 'highlighted section' },
-            ];
-            editor.setDecorations(decorationType, decorations);
         }
     });
     context.subscriptions.push(disposable);
@@ -173,13 +169,13 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = __webpack_require__(6);
 class PromptGenerator {
     constructor() {
-        this.customInstructions = ' Please rewrite the code exactly and provide only the rewritten code.';
+        this.customInstructions = "Only respond with code in Java.";
     }
     generate(promptType, code) {
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
-                prompt = `Insert a print statement on this code line: "${code}". The print statement should display the variables involved and their values.`;
+                prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statment.`;
                 break;
             case PromptType_1.PromptType.Conditional:
                 prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
@@ -237,7 +233,7 @@ class APIController {
             model: 'text-davinci-002',
             prompt: prompt,
             max_tokens: maxTokens,
-            temperature: 0.2
+            temperature: 0.0
         });
         return response.choices[0].text.trim();
     }
