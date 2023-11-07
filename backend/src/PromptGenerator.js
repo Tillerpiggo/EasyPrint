@@ -4,7 +4,7 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = require("./PromptType");
 class PromptGenerator {
     constructor() {
-        this.customInstructions = ' Please rewrite the code exactly and provide only the rewritten code.';
+        this.customInstructions = ' Please rewrite the code exactly and provide only the rewritten code. Write all code in code blocks.';
     }
     generate(promptType, code) {
         let prompt = '';
@@ -22,7 +22,7 @@ class PromptGenerator {
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
             default:
-                return 'Invalid prompt type.';
+                return 'Just say \'ERROR: INVALID PROMPT\'';
         }
         return prompt + this.customInstructions;
     }

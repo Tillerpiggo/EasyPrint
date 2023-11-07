@@ -31,7 +31,7 @@
         "mac": "shift+cmd+f"
       },
       {
-        "command": "extension.keybindingHighlight",
+        "command": "easyprint.keybindingHighlight",
         "key": "ctrl+alt+h",
         "mac": "cmd+shift+h",
         "when": "editorTextFocus"
