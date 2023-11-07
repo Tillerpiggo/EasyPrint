@@ -29,6 +29,12 @@
         "command": "easyprint.keybinding",
         "key": "ctrl+alt+l",
         "mac": "shift+cmd+f"
+      },
+      {
+        "command": "extension.keybindingHighlight",
+        "key": "ctrl+alt+h",
+        "mac": "cmd+shift+h",
+        "when": "editorTextFocus"
       }
     ]
   },

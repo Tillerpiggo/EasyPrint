@@ -24,6 +24,30 @@ function activate(context) {
     });
     context.subscriptions.push(disposable);
     context.subscriptions.push(keybinding);
+
+    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
+		const editor = vscode.window.activeTextEditor;
+
+		if (editor) {
+			const selected = editor.selection;
+			const startLine = selected.start;
+			const endLine = selected.end;
+
+			const decorationType = vscode.window.createTextEditorDecorationType({
+				backgroundColor: 'purple', 
+			});
+
+			const range = new vscode.Range(startLine, endLine);
+
+			const decorations = [
+				{ range, hoverMessage: 'highlighted section' },
+			];
+
+			editor.setDecorations(decorationType, decorations);
+		}
+	});
+
+    context.subscriptions.push(keybindingHighlight);
 }
 exports.activate = activate;
 // This method is called when your extension is deactivated

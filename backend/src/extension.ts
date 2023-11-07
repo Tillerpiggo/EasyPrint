@@ -19,13 +19,35 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage('Hello World from easyprint!');
 	});
 
-	console.log("Wow ur at keybinding");
 	let keybinding = vscode.commands.registerCommand('easyprint.keybinding', () => {
 		vscode.window.showInformationMessage("OMG This is a keybinding that's fire");
 	});
 
+	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
+		const editor = vscode.window.activeTextEditor;
+
+		if (editor) {
+			const selected = editor.selection;
+			const startLine = selected.start;
+			const endLine = selected.end;
+
+			const decorationType = vscode.window.createTextEditorDecorationType({
+				backgroundColor: 'purple', 
+			});
+
+			const range = new vscode.Range(startLine, endLine);
+
+			const decorations = [
+				{ range, hoverMessage: 'highlighted section' },
+			];
+
+			editor.setDecorations(decorationType, decorations);
+		}
+	});
+
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(keybinding);
+	context.subscriptions.push(keybindingHighlight);
 }
 
 // This method is called when your extension is deactivated
