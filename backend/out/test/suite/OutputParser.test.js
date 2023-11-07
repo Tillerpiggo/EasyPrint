@@ -14,7 +14,6 @@ console.log(example);
 And here's some text after the code box.
 `;
         const extractedCode = outputParser.extractCodeBox(response);
-        // Ensure the extracted code matches the expected content
         const expectedCode = `const example = 'Hello, World!';\nconsole.log(example);`;
         expect(extractedCode).toBe(expectedCode);
     });
@@ -24,7 +23,6 @@ Here's a response with no code box.
 No code here.
 `;
         const extractedCode = outputParser.extractCodeBox(response);
-        // Ensure null is returned when no code box is found
         expect(extractedCode).toBeNull();
     });
 });
