@@ -16,10 +16,13 @@ export class PrintStatementGenerator {
   async generatePrintStatement(promptType: PromptType, code: string, maxTokens: number = 100): Promise<string> {
     // Generate the prompt
     const prompt = this.promptGenerator.generate(promptType, code);
+    console.log("prompt: " + prompt)
     // Get the response from APIController
     const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+    console.log("apiResponse: " + apiResponse)
     // Parse the response to get the first code block
     const parsedResponse = this.outputParser.extractCodeBox(apiResponse);
+    console.log("parsedResponse: " + parsedResponse)
     // Return the code with the print statement
     return `${parsedResponse}`;
   }

@@ -1,10 +1,11 @@
 import CodeParser, { FileParser } from './DummyCodeParser';
 import { PrintStatementGenerator } from './PrintStatementGenerator';
+import { PromptType } from './PromptType';
 //import { CodeModifier } from './CodeModifier';
 
 export class BackendController {
     private filePath: string;
-    private codeParser: CodeParser;
+    private codeParser: FileParser;
     private printStatementGenerator: PrintStatementGenerator;
     //private codeModifier: CodeModifier;
 

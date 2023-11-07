@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
+import { BackendController } from './BackendController';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -28,6 +29,20 @@ export function activate(context: vscode.ExtensionContext) {
 
 		if (editor) {
 			const selected = editor.selection;
+			// get text and store it in a variable
+			const text = editor.document.getText(selected);
+
+			// send the text to the backend controller
+			const APIKEY= "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"
+			let backend = new BackendController("filepath", APIKEY)
+			backend.onHighlight(text).then(response => {
+				vscode.window.showInformationMessage(response)
+			});
+
+			console.log("dummy dummy");
+			
+
+
 			const startLine = selected.start;
 			const endLine = selected.end;
 
