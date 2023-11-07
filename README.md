@@ -12,3 +12,11 @@
 
 ## Repository Layout
 - The repository mirrors our architecture, with our largest and most involved folder being the backend. In here, we have all relevant files for the backend controller (code modifier and code structure parser) and the print statement controller (response parser, prompt generator, and API controller). We also have a folder for UI related files (which will be closely involved with the VSCode extension itself).
+
+## Set Up
+ - First make sure npm is installed and up-to-date
+ - Run "npm run compile"
+ - Click fn+F5 (mac) or F5 (windows)
+    - This will open a new window called the "Extension Development Host"
+    - This is a new window of vscode that has the extension working
+ - Highlight any piece of code and click cmd+shift+h (mac) or ctrl+alt+h (windows) to generate debugging print statements!
