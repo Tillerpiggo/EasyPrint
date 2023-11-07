@@ -41,20 +41,16 @@ function activate(context) {
             const text = editor.document.getText(selected);
             const APIKEY = "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";
             let backend = new BackendController_1.BackendController("filepath", APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
             backend.onHighlight(text).then(response => {
+                edit.replace(editor.document.uri, range, response);
+                vscode.workspace.applyEdit(edit);
                 vscode.window.showInformationMessage(response);
             });
             console.log("dummy dummy");
-            const startLine = selected.start;
-            const endLine = selected.end;
-            const decorationType = vscode.window.createTextEditorDecorationType({
-                backgroundColor: 'purple',
-            });
-            const range = new vscode.Range(startLine, endLine);
-            const decorations = [
-                { range, hoverMessage: 'highlighted section' },
-            ];
-            editor.setDecorations(decorationType, decorations);
         }
     });
     context.subscriptions.push(disposable);
