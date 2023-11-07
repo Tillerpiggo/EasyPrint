@@ -14,7 +14,7 @@ class APIController {
             model: 'text-davinci-002',
             prompt: prompt,
             max_tokens: maxTokens,
-            temperature: 0.2
+            temperature: 0.0
         });
         return response.choices[0].text.trim();
     }

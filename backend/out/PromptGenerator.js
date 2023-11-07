@@ -4,13 +4,13 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = require("./PromptType");
 class PromptGenerator {
     constructor() {
-        this.customInstructions = 'Only respond with code in Java.';
+        this.customInstructions = "Only respond with code in Java.";
     }
     generate(promptType, code) {
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
-                prompt = `Insert a print statement on this code line: "${code}". The print statement should display the variables involved and their values.`;
+                prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statment.`;
                 break;
             case PromptType_1.PromptType.Conditional:
                 prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
