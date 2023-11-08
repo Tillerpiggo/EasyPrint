@@ -1,7 +1,11 @@
 import { PromptType } from './PromptType';
 
 export class PromptGenerator {
-  private customInstructions = "Only respond with code in Java and no extra characters.";//' Please rewrite the code exactly and provide only the rewritten code. Write in Java';
+  private customInstructions: string;
+
+  constructor (fileType: string) {
+    this.customInstructions = ` Only respond with code in "${fileType}" and no extra characters.`;//' Please rewrite the code exactly and provide only the rewritten code. Write in Java';
+  }
 
   generate(promptType: PromptType, code: string): string {
     let prompt = '';

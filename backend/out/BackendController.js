@@ -10,11 +10,12 @@ const PromptType_1 = require("./PromptType");
 class BackendController {
     constructor(filePath, apiKey) {
         this.filePath = filePath;
-        this.codeParser = new DummyCodeParser_1.default(filePath);
-        this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey);
+        this.codeParser = new DummyCodeParser_1.default(this.filePath);
+        const fileType = this.codeParser.getFileType();
+        this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, fileType);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.Loop;
+        const promptType = PromptType_1.PromptType.SingleLine;
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }

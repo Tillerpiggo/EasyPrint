@@ -39,8 +39,9 @@ function activate(context) {
         if (editor) {
             const selected = editor.selection;
             const text = editor.document.getText(selected);
+            const editor_document = editor.document;
             const APIKEY = "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";
-            let backend = new BackendController_1.BackendController("filepath", APIKEY);
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const startLine = selected.start;
             const endLine = selected.end;
             const range = new vscode.Range(startLine, endLine);

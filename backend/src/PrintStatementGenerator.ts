@@ -8,13 +8,14 @@ export class PrintStatementGenerator {
   private apiController: APIController;
   private outputParser: OutputParser;
 
-  constructor(apiKey: string) {
-    this.promptGenerator = new PromptGenerator();
+  constructor(apiKey: string, fileType: string) {
+    this.promptGenerator = new PromptGenerator(fileType);
     this.apiController = new APIController(apiKey);
     this.outputParser = new OutputParser();
   }
   async generatePrintStatement(promptType: PromptType, code: string, maxTokens: number = 100): Promise<string> {
     // Generate the prompt
+    console.log("prompt type: ", promptType)
     const prompt = this.promptGenerator.generate(promptType, code);
     console.log("prompt: " + prompt)
     // Get the response from APIController

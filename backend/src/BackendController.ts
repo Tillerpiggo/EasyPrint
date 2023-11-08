@@ -1,3 +1,4 @@
+import { type } from 'os';
 import CodeParser, { FileParser } from './DummyCodeParser';
 import { PrintStatementGenerator } from './PrintStatementGenerator';
 import { PromptType } from './PromptType';
@@ -11,8 +12,9 @@ export class BackendController {
 
     constructor(filePath: string, apiKey: string) {
         this.filePath = filePath;
-        this.codeParser = new CodeParser(filePath);
-        this.printStatementGenerator = new PrintStatementGenerator(apiKey);
+        this.codeParser = new CodeParser(this.filePath);
+        const fileType = this.codeParser.getFileType();
+        this.printStatementGenerator = new PrintStatementGenerator(apiKey, fileType);
         //this.codeModifier = new CodeModifier();
     }
 
