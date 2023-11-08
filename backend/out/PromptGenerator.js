@@ -4,7 +4,7 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = require("./PromptType");
 class PromptGenerator {
     constructor(fileType) {
-        this.customInstructions = ` Only respond with code in "${fileType}" and no extra characters.`;
+        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters.`;
     }
     generate(promptType, code) {
         let prompt = '';

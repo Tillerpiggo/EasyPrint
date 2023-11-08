@@ -98,7 +98,7 @@ class BackendController {
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, fileType);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.VariableTracking;
+        const promptType = PromptType_1.PromptType.SingleLine;
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }
@@ -193,7 +193,7 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = __webpack_require__(7);
 class PromptGenerator {
     constructor(fileType) {
-        this.customInstructions = ` Only respond with code in "${fileType}" and no extra characters.`;
+        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters.`;
     }
     generate(promptType, code) {
         let prompt = '';
