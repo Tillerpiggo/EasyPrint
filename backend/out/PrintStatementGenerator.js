@@ -11,6 +11,7 @@ class PrintStatementGenerator {
         this.outputParser = new OutputParser_1.OutputParser();
     }
     async generatePrintStatement(promptType, code, maxTokens = 100) {
+        console.log("prompt type: ", promptType);
         const prompt = this.promptGenerator.generate(promptType, code);
         console.log("prompt: " + prompt);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
