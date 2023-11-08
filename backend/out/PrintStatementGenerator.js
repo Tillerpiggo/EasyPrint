@@ -5,8 +5,8 @@ const PromptGenerator_1 = require("./PromptGenerator");
 const APIController_1 = require("./APIController");
 const OutputParser_1 = require("./OutputParser");
 class PrintStatementGenerator {
-    constructor(apiKey) {
-        this.promptGenerator = new PromptGenerator_1.PromptGenerator();
+    constructor(apiKey, fileType) {
+        this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
         this.outputParser = new OutputParser_1.OutputParser();
     }

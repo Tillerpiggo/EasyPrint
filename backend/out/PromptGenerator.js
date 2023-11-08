@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PromptGenerator = void 0;
 const PromptType_1 = require("./PromptType");
 class PromptGenerator {
-    constructor() {
-        this.customInstructions = "Only respond with code in Java and no extra characters.";
+    constructor(fileType) {
+        this.customInstructions = ` Only respond with code in "${fileType}" and no extra characters.`;
     }
     generate(promptType, code) {
         let prompt = '';

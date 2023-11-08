@@ -98,7 +98,7 @@ class BackendController {
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, fileType);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.SingleLine;
+        const promptType = PromptType_1.PromptType.VariableTracking;
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }
@@ -169,6 +169,7 @@ class PrintStatementGenerator {
         this.outputParser = new OutputParser_1.OutputParser();
     }
     async generatePrintStatement(promptType, code, maxTokens = 100) {
+        console.log("prompt type: ", promptType);
         const prompt = this.promptGenerator.generate(promptType, code);
         console.log("prompt: " + prompt);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);

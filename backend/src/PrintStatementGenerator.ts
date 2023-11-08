@@ -15,6 +15,7 @@ export class PrintStatementGenerator {
   }
   async generatePrintStatement(promptType: PromptType, code: string, maxTokens: number = 100): Promise<string> {
     // Generate the prompt
+    console.log("prompt type: ", promptType)
     const prompt = this.promptGenerator.generate(promptType, code);
     console.log("prompt: " + prompt)
     // Get the response from APIController
