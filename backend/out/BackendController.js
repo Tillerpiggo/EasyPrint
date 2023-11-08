@@ -14,7 +14,7 @@ class BackendController {
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.SingleLine;
+        const promptType = PromptType_1.PromptType.Loop;
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }
