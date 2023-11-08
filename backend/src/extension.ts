@@ -31,10 +31,12 @@ export function activate(context: vscode.ExtensionContext) {
 			const selected = editor.selection;
 			// get text and store it in a variable
 			const text = editor.document.getText(selected);
+			// get the document that is open in the editor
+			const editor_document = editor.document;
 
 			// send the text to the backend controller
 			const APIKEY= "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"
-			let backend = new BackendController("filepath", APIKEY)
+			let backend = new BackendController(editor_document.fileName, APIKEY)
 			const startLine = selected.start;
 			const endLine = selected.end;
 

@@ -8,8 +8,8 @@ export class PrintStatementGenerator {
   private apiController: APIController;
   private outputParser: OutputParser;
 
-  constructor(apiKey: string) {
-    this.promptGenerator = new PromptGenerator();
+  constructor(apiKey: string, fileType: string) {
+    this.promptGenerator = new PromptGenerator(fileType);
     this.apiController = new APIController(apiKey);
     this.outputParser = new OutputParser();
   }
