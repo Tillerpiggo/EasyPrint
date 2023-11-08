@@ -3,7 +3,7 @@ const { PromptGenerator } = require('../../PromptGenerator');
 
 describe('PromptGenerator', () => {
   it('should generate a SingleLine prompt', () => {
-    const generator = new PromptGenerator();
+    const generator = new PromptGenerator("Java");
     const code = 'const x = 10;';
     const prompt = generator.generate(PromptType.SingleLine, code);
     expect(prompt).toBe(
@@ -12,7 +12,7 @@ describe('PromptGenerator', () => {
   });
 
   it('should generate a Conditional prompt', () => {
-    const generator = new PromptGenerator();
+    const generator = new PromptGenerator("Java");
     const code = 'if (x > 0) { /* code */ } else { /* code */ }';
     const prompt = generator.generate(PromptType.Conditional, code);
     expect(prompt).toBe(
@@ -21,7 +21,7 @@ describe('PromptGenerator', () => {
   });
 
   it('should generate a Loop prompt', () => {
-    const generator = new PromptGenerator();
+    const generator = new PromptGenerator("Java");
     const code = 'for (let i = 0; i < 5; i++) { /* code */ }';
     const prompt = generator.generate(PromptType.Loop, code);
     expect(prompt).toBe(
@@ -30,7 +30,7 @@ describe('PromptGenerator', () => {
   });
 
   it('should generate a VariableTracking prompt', () => {
-    const generator = new PromptGenerator();
+    const generator = new PromptGenerator("Java");
     const code = 'let count = 0; count++; count = count * 2;';
     const prompt = generator.generate(PromptType.VariableTracking, code);
     expect(prompt).toBe(
@@ -39,7 +39,7 @@ describe('PromptGenerator', () => {
   });
 
   it('should return "Invalid prompt type" for an invalid prompt type', () => {
-    const generator = new PromptGenerator();
+    const generator = new PromptGenerator("Java");
     const code = 'const x = 10;';
     const prompt = generator.generate('InvalidPromptType', code);
     expect(prompt).toBe('Invalid prompt type.');
