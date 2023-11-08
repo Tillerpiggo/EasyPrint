@@ -1,5 +1,7 @@
 # EasyPrint
-
+- Beta version v1.0
+- Operational functions
+   - Print generation of single variable - By highlighting the variable you wish to generate a print statement for and use the macro CTRL+ALT+H a print Statement will be added to your code for the variable.
 ## Idea
 - This product is meant to be used as an easy debugging tool for software developers, no matter the language they are programming in. The product will modify source code comments, add and remove specific print statements, and allow users to track the value of different variables throughout the code. This easy tool is meant to perform the menial/repetitive work and allow the software developer to maintain their thoughts on the functionality of their code. 
 
