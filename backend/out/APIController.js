@@ -9,7 +9,7 @@ class APIController {
     constructor(apiKey) {
         this.openai = new openai_1.default({ apiKey });
     }
-    async generateResponse(prompt, maxTokens = 50) {
+    async generateResponse(prompt, maxTokens = 100) {
         const response = await this.openai.completions.create({
             model: 'text-davinci-002',
             prompt: prompt,

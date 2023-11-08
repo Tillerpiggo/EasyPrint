@@ -96,7 +96,7 @@ class BackendController {
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.SingleLine;
+        const promptType = PromptType_1.PromptType.Loop;
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }
@@ -169,19 +169,19 @@ exports.PromptGenerator = void 0;
 const PromptType_1 = __webpack_require__(6);
 class PromptGenerator {
     constructor() {
-        this.customInstructions = "Only respond with code in Java.";
+        this.customInstructions = "Only respond with code in Java and no extra characters.";
     }
     generate(promptType, code) {
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
-                prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statment.`;
+                prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
                 break;
             case PromptType_1.PromptType.Conditional:
                 prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
                 break;
             case PromptType_1.PromptType.Loop:
-                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively.`;
+                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively. Respond with the exact code plus your print statement.`;
                 break;
             case PromptType_1.PromptType.VariableTracking:
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
@@ -228,7 +228,7 @@ class APIController {
     constructor(apiKey) {
         this.openai = new openai_1.default({ apiKey });
     }
-    async generateResponse(prompt, maxTokens = 50) {
+    async generateResponse(prompt, maxTokens = 100) {
         const response = await this.openai.completions.create({
             model: 'text-davinci-002',
             prompt: prompt,
