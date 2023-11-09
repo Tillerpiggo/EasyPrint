@@ -1,0 +1,52 @@
+# Team Report
+
+## Goals
+- Use API controller to do more complicated prompts
+- Build a prompt generator to create complex promts to send to the AI API
+- Merge wokring vs code extension into the current project - then tie keybindings and other methods
+
+## Progress
+
+- Developed and released Beta version of EasyPrint
+- Connected front end processes to backend functions
+- Created a function to capture highlighted text in the workspace and a keybind to use the EasyPrint system
+
+## Plans
+- Develop more automated tests to add to our test suite
+- Finish code parsers that creates groupings of code segments by conditionals and loops
+
+# Personal Reports
+
+## Tyler Gee
+
+### Goals
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting.
+
+### Progress
+- Created fully working Print Statement Generator with simple prompts
+- Developed Code Parser; but ultimately used Dummy Code Parser for the beta
+- Helped with connecting architecture from frontend to backend
+
+### Plans
+- Refine prompts significantly (may require reshaping architecture)
+- Finish Code Parser that creates groupings
+- Help shape UI to accept/display code parser groupings
+- Architect system for tracking, deleting, caching, and queuing print statements
+
+## Tyler Richardson
+### Goals
+- Create AI prompt generator
+- Integrate some front end features with the backend functionality
+- finish design of backend functions and implement some of the functions
+
+### Progress
+- Created the AI Prompt generator
+- Created Parsers and other classes to help with prompt generation
+- Cleaned up AI Controller and added functional tests
+- Added more tests to testing sweet and fixed existing tests to reflect new prompts
+
+### Plans
+- Continue to develop more automated tests to add to our test suite 
+- Start adding features to generate print statements for loops and conditionals
+- Create response parser that parser code out of response data from AI
