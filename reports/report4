@@ -1,0 +1,32 @@
+# Team Report
+
+## Goals
+- Use API controller to do more complicated prompts
+- Build a prompt generator to create complex promts to send to the AI API
+- Merge wokring vs code extension into the current project - then tie keybindings and other methods
+
+## Progress
+
+- TODO
+
+## Plans
+- TODO
+
+# Personal Reports
+
+## Tyler Gee
+
+### Goals
+- Finish up Print Statement Generator (relies on Code Parser implementation) & connect it with API Controller
+- Write Code Parser and work to integrate it with UI highlighting.
+
+### Progress
+- Created fully working Print Statement Generator with simple prompts
+- Developed Code Parser; but ultimately used Dummy Code Parser for the beta
+- Helped with connecting architecture from frontend to backend
+
+### Plans
+- Refine prompts significantly (may require reshaping architecture)
+- Finish Code Parser that creates groupings
+- Help shape UI to accept/display code parser groupings
+- Architect system for tracking, deleting, caching, and queuing print statements
