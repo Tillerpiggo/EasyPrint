@@ -148,6 +148,7 @@ exports.fileTypeDict = {
     "js": "JavaScript",
     "java": "Java",
     "ts": "TypeScript",
+    "test.ts": "test"
 };
 
 

@@ -3,5 +3,6 @@ export const fileTypeDict: { [key: string]: string } = {
     "js": "JavaScript",
     "java" : "Java",
     "ts" : "TypeScript",
+    "test.ts" : "test"
     // Add any further files if required
 };
