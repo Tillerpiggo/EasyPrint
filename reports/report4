@@ -7,10 +7,13 @@
 
 ## Progress
 
-- TODO
+- Developed and released Beta version of EasyPrint
+- Connected front end processes to backend functions
+- Created a function to capture highlighted text in the workspace and a keybind to use the EasyPrint system
 
 ## Plans
-- TODO
+- Develop more automated tests to add to our test suite
+- Finish code parsers that creates groupings of code segments by conditionals and loops
 
 # Personal Reports
 
@@ -30,3 +33,20 @@
 - Finish Code Parser that creates groupings
 - Help shape UI to accept/display code parser groupings
 - Architect system for tracking, deleting, caching, and queuing print statements
+
+## Tyler Richardson
+### Goals
+- Create AI prompt generator
+- Integrate some front end features with the backend functionality
+- finish design of backend functions and implement some of the functions
+
+### Progress
+- Created the AI Prompt generator
+- Created Parsers and other classes to help with prompt generation
+- Cleaned up AI Controller and added functional tests
+- Added more tests to testing sweet and fixed existing tests to reflect new prompts
+
+### Plans
+- Continue to develop more automated tests to add to our test suite 
+- Start adding features to generate print statements for loops and conditionals
+- Create response parser that parser code out of response data from AI
