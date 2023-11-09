@@ -14,6 +14,7 @@
 ## Plans
 - Develop more automated tests to add to our test suite
 - Finish code parsers that creates groupings of code segments by conditionals and loops
+- Make feature for removing print statements
 
 # Personal Reports
 
@@ -63,3 +64,27 @@
 ### Plans
 - Finish the code parser to identify blocks and classify as loops, condition, single statement or variable tracking classes which forms the basis for generating the prompt
 - Build automated tests for this feature and also for the feature for extracting a file's extension
+
+## Akash Prasad
+
+### Goals
+- Merge vs code extension into current project then:
+    - Tie keybindings
+    - Figure out how to change text in the IDE itself
+- Further steps to milestone 1
+    - If the AI API is set up, assist in making basic calls to that with a extension command
+
+### Progress
+- Successfully merged to make the current project:
+    - have keybindings (and know how to make more)
+    - helped in highlighting and selecting text
+- Further updates on the organization/configuration of the project
+
+### Plans
+- Work on highlighting groupings of text - such as multiple instances of the same variable
+- Figure out some end-to-end way to create print statements for handling groupings
+- Figure out how to remove print statements:
+    - add "\\ Added by EasyPrint" to identify print statements
+    - naively go through the file and remove those lines
+
+
