@@ -1,1 +1,20 @@
-export {};
+import * as vscode from "vscode";
+export interface FileParser {
+    getScopeAtPosition(point: vscode.Position): number[];
+    getCodeAtLines(start: number, end: number): string;
+    getLastDescendant(node: any): any;
+    getFileType(): string;
+}
+declare class CodeParser implements FileParser {
+    private tree;
+    private sourceCode;
+    private filePath;
+    private fileType;
+    constructor(filePath: string);
+    getScopeAtPosition(point: vscode.Position): number[];
+    getCodeAtLines(start: number, end: number): string;
+    getLastDescendant(node: any): any;
+    getLineAtPosition(point: any): string;
+    getFileType(): string;
+}
+export default CodeParser;

@@ -5,19 +5,14 @@ import * as vscode from "vscode";
 
 import { fileTypeDict } from "./FileType";
 
-interface Point {
-    row: number;
-    col: number;
-}
-
 export interface FileParser {
-    getScopeAtPosition(point: vscode.Position): string;
+    getScopeAtPosition(point: vscode.Position): number[];
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
   }
 
-class CodeParser {
+class CodeParser implements FileParser {
   private tree: any; // The AST
   private sourceCode: string;
   private filePath: string;
@@ -39,17 +34,16 @@ class CodeParser {
     }
 
 
-
     const parser = new Parser();
     parser.setLanguage(JavaScript);
     this.sourceCode = fs.readFileSync(filePath, 'utf-8');
     this.tree = parser.parse(this.sourceCode);
   }
 
-  getScopeAtPosition(point: any): string {
+  getScopeAtPosition(point: vscode.Position): number[] {
     const line = this.getLineAtPosition(point);
     if (!line || /^\s*$/.test(line)) {
-      return '';
+      return [];
     }
 
     const node = this.tree.rootNode.namedDescendantForPosition(point);
@@ -61,7 +55,7 @@ class CodeParser {
     const lastNode = this.getLastDescendant(node);
     const end = lastNode.endPosition.row;
 
-    return this.getCodeAtLines(start, end);
+    return [start, end];
   }
 
   getCodeAtLines(start: number, end: number): string {

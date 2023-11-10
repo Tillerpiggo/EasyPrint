@@ -1,5 +1,5 @@
 import { type } from 'os';
-import CodeParser, { FileParser, Point } from './DummyCodeParser';
+import CodeParser, { FileParser} from './CodeParser';
 import { PrintStatementGenerator } from './PrintStatementGenerator';
 import { PromptType } from './PromptType';
 import * as vscode from 'vscode';
