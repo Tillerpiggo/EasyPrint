@@ -20,13 +20,13 @@
         "title": "Hello World"
       },
       {
-        "command": "easyprint.keybinding",
+        "command": "easyprint.keybindingHover",
         "title": "Keybinding"
       }
     ],
     "keybindings": [
       {
-        "command": "easyprint.keybinding",
+        "command": "easyprint.keybindingHover",
         "key": "ctrl+alt+l",
         "mac": "shift+cmd+f"
       },
