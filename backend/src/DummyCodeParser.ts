@@ -1,12 +1,13 @@
 import { fileTypeDict } from "./FileType";
+import * as vscode from "vscode";
 
-interface Point {
+export interface Point {
   row: number;
   col: number;
 }
 
 export interface FileParser {
-  getScopeAtPosition(point: Point): string;
+  getScopeAtPosition(point: vscode.Position): number[];
   getCodeAtLines(start: number, end: number): string;
   getLastDescendant(node: any): any;
   getFileType(): string;
@@ -20,9 +21,9 @@ class DummyCodeParser implements FileParser {
   }
 
   // Get the smallest node that includes a given point
-  getScopeAtPosition(point: any): string {
+  getScopeAtPosition(point: any): number[] {
     // Always return the same code, regardless of the point
-    return this.code;
+    return point.row;
   }
 
   // Get the code between two line numbers
