@@ -49,6 +49,7 @@
     "test": "jest"
   },
   "devDependencies": {
+    "@electron/rebuild": "^3.3.0",
     "@types/mocha": "^10.0.3",
     "@types/node": "18.x",
     "@types/vscode": "^1.83.0",
@@ -63,5 +64,11 @@
     "typescript": "^5.2.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "tree-sitter": "^0.20.6",
+    "tree-sitter-java": "^0.20.2",
+    "tree-sitter-python": "^0.20.4",
+    "tree-sitter-typescript": "^0.20.3"
   }
 }

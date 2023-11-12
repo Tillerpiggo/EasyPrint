@@ -1,5 +1,6 @@
 import { fileTypeDict } from "./FileType";
 import * as vscode from "vscode";
+const Parser = require('web-tree-sitter');
 
 export interface Point {
   row: number;
@@ -18,6 +19,18 @@ class DummyCodeParser implements FileParser {
 
   constructor(code: string) {
     this.code = code;
+		(async () => {
+			await Parser.init();
+			const parser = new Parser();
+			// const absolute = path.join(context.extensionPath, 'tree-sitter-javascript.wasm')
+			// const wasm = path.relative(process.cwd(), absolute)
+			// const lang = await Parser.Language.load(wasm);
+			
+			const lang = await Parser.Language.load('Users/macha/easyprint/backend/tree-sitter-javascript.wasm')
+			parser.setLanguage(lang);
+			const tree = parser.parse('let z = 5;');
+			console.log("syntax tree: ", tree.rootNode.toString());
+		})();
   }
 
   // Get the smallest node that includes a given point

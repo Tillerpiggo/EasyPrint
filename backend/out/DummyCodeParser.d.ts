@@ -1,9 +1,10 @@
-interface Point {
+import * as vscode from "vscode";
+export interface Point {
     row: number;
     col: number;
 }
 export interface FileParser {
-    getScopeAtPosition(point: Point): string;
+    getScopeAtPosition(point: vscode.Position): number[];
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
@@ -11,7 +12,7 @@ export interface FileParser {
 declare class DummyCodeParser implements FileParser {
     private code;
     constructor(code: string);
-    getScopeAtPosition(point: any): string;
+    getScopeAtPosition(point: any): number[];
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;

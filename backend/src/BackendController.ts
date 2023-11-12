@@ -6,16 +6,13 @@ import * as vscode from 'vscode';
 //import { CodeModifier } from './CodeModifier';
 
 export class BackendController {
-    private filePath: string;
     private codeParser: FileParser;
     private printStatementGenerator: PrintStatementGenerator;
     //private codeModifier: CodeModifier;
 
     constructor(filePath: string, apiKey: string) {
-        this.filePath = filePath;
-        this.codeParser = new CodeParser(this.filePath);
-        const fileType = this.codeParser.getFileType();
-        this.printStatementGenerator = new PrintStatementGenerator(apiKey, fileType);
+        this.codeParser = new CodeParser(filePath);
+        this.printStatementGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
         //this.codeModifier = new CodeModifier();
     }
 
@@ -24,10 +21,10 @@ export class BackendController {
         const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
         return printStatement;
     }
-
-    onHover(filePath: string, pos: vscode.Position): vscode.Range[] {
-        const linesToHighlight = this.codeParser.getScopeAtPosition(pos);
     
+    async onHover(pos: vscode.Position): Promise<vscode.Range[]> {
+        await this.codeParser.initializeParserAndTree()
+        const linesToHighlight = this.codeParser.getScopeAtPosition(pos);
         let ranges: vscode.Range[] = [];
         for (let line of linesToHighlight) {
             const code = this.codeParser.getCodeAtLines(line, line);
@@ -39,7 +36,6 @@ export class BackendController {
             
             ranges.push(new vscode.Range(start, end));
         }
-    
         return ranges;
     }
 }

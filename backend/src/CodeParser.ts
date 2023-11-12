@@ -1,11 +1,17 @@
-const Parser = require('tree-sitter');
-const JavaScript = require('tree-sitter-javascript');
 import * as fs from 'fs';
 import * as vscode from "vscode";
-
 import { fileTypeDict } from "./FileType";
+const Parser = require("web-tree-sitter");
+
+interface Point {
+  row: number;
+  column: number;
+}
 
 export interface FileParser {
+    fileType: string;
+    initializeParserAndTree(): Promise<void>;
+    setParserLanguage(): Promise<void>;
     getScopeAtPosition(point: vscode.Position): number[];
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
@@ -13,57 +19,60 @@ export interface FileParser {
   }
 
 class CodeParser implements FileParser {
-  private tree: any; // The AST
-  private sourceCode: string;
   private filePath: string;
-  private fileType: string;
+  private parser: any;
+  private tree: any;
+  private sourceCode: string;
+  private lang: any;
+
+  public fileType: string;
 
   constructor(filePath: string) {
     this.filePath = filePath
     this.fileType = this.getFileType();
-
-    if (this.fileType == "Java"){
-        const fileLanguage = require('tree-sitter-java');
-    } else if (this.fileType == "Python"){
-        const fileLanguage = require('tree-sitter-python');
-    } else if (this.fileType == "JavaScript"){
-        const fileLanguage = require('tree-sitter-javascript');
-    }
-    else if (this.fileType == "JavaScript"){
-        const fileLanguage = require('tree-sitter-javascript');
-    }
-
-
-    const parser = new Parser();
-    parser.setLanguage(JavaScript);
-    this.sourceCode = fs.readFileSync(filePath, 'utf-8');
-    this.tree = parser.parse(this.sourceCode);
+    this.sourceCode = ''
   }
 
-  getScopeAtPosition(point: vscode.Position): number[] {
+  async initializeParserAndTree() {
+    this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
+    await Parser.init();
+    this.parser = new Parser();
+    await this.setParserLanguage();
+    this.tree = this.parser.parse(this.sourceCode);
+  }
+
+  async setParserLanguage() {
+    if (this.fileType == "Python") {
+      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-python.wasm');
+    } else if (this.fileType == "JavaScript") {
+      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-javascript.wasm');
+    } else if (this.fileType == "Java") {
+      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-java.wasm');
+    } else if (this.fileType == "TypeScript") {
+      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-typescript.wasm');
+    }
+    this.parser.setLanguage(this.lang);
+  }
+
+  getScopeAtPosition(vs_point: vscode.Position): number[] {
+    const point = {
+      row: vs_point.line,
+      column: vs_point.character
+    };
     const line = this.getLineAtPosition(point);
     if (!line || /^\s*$/.test(line)) {
       return [];
     }
-
     const node = this.tree.rootNode.namedDescendantForPosition(point);
-    console.log("node:" + node);
-
     const start = node.startPosition.row;
-
-    // Get the last descendant of the node
     const lastNode = this.getLastDescendant(node);
     const end = lastNode.endPosition.row;
-
     return [start, end];
   }
 
   getCodeAtLines(start: number, end: number): string {
     const lines = this.sourceCode.split('\n');
-
-    // Keep only lines within the range
     const scopedLines = lines.slice(start, end + 1);
-
     return scopedLines.join('\n');
   }
 
@@ -71,13 +80,12 @@ class CodeParser implements FileParser {
     if (node.childCount === 0) {
       return node;
     } else {
-      // Get the last child of the node
       const lastChild = node.lastNamedChild;
       return this.getLastDescendant(lastChild);
     }
   }
 
-  getLineAtPosition(point: any): string {
+  getLineAtPosition(point: Point): string {
     const lines = this.sourceCode.split('\n');
     if (point.row >= 0 && point.row < lines.length) {
       return lines[point.row];
