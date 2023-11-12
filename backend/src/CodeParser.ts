@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from "vscode";
+import * as path from 'path';
 import { fileTypeDict } from "./FileType";
 const Parser = require("web-tree-sitter");
 
@@ -42,15 +43,18 @@ class CodeParser implements FileParser {
   }
 
   async setParserLanguage() {
+    let wasmFilePath: string = '';
+    const wasmDir = path.join(__dirname, '..', 'Parsers');
     if (this.fileType == "Python") {
-      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-python.wasm');
+      wasmFilePath = path.join(wasmDir, 'tree-sitter-python.wasm');
     } else if (this.fileType == "JavaScript") {
-      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-javascript.wasm');
+      wasmFilePath = path.join(wasmDir, 'tree-sitter-javascript.wasm');
     } else if (this.fileType == "Java") {
-      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-java.wasm');
+      wasmFilePath = path.join(wasmDir, 'tree-sitter-java.wasm');
     } else if (this.fileType == "TypeScript") {
-      this.lang = await Parser.Language.load('Users/macha/easyprint/backend/parsers/tree-sitter-typescript.wasm');
+      wasmFilePath = path.join(wasmDir, 'tree-sitter-typescript.wasm');
     }
+    this.lang = await Parser.Language.load(wasmFilePath);
     this.parser.setLanguage(this.lang);
   }
 
