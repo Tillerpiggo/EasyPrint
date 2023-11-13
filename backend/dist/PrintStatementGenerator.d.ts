@@ -4,5 +4,5 @@ export declare class PrintStatementGenerator {
     private apiController;
     private outputParser;
     constructor(apiKey: string, fileType: string);
-    generatePrintStatement(promptType: PromptType, code: string, maxTokens?: number): Promise<string>;
+    insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens?: number): Promise<string>;
 }

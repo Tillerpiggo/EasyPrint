@@ -148,8 +148,10 @@ class BackendController {
     }
     async onHighlight(code) {
         const promptType = PromptType_1.PromptType.SingleLine;
-        const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
-        return printStatement;
+        const linesOfCode = code.split('\n');
+        const insertionLines = [linesOfCode.length];
+        const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+        return codeWithPrintStatement;
     }
     async onHover(pos) {
         await this.codeParser.initializeParserAndTree();
@@ -333,14 +335,10 @@ class PrintStatementGenerator {
         this.apiController = new APIController_1.APIController(apiKey);
         this.outputParser = new OutputParser_1.OutputParser();
     }
-    async generatePrintStatement(promptType, code, maxTokens = 100) {
-        console.log("prompt type: ", promptType);
+    async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
-        console.log("prompt: " + prompt);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        console.log("apiResponse: " + apiResponse);
-        const parsedResponse = this.outputParser.extractCodeBox(apiResponse);
-        console.log("parsedResponse: " + parsedResponse);
+        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
         return `${parsedResponse}`;
     }
 }
@@ -364,6 +362,8 @@ class PromptGenerator {
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
+                return `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else.
+        The code: ${code}`;
                 prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
                 break;
             case PromptType_1.PromptType.Conditional:
@@ -9707,8 +9707,11 @@ exports.Moderations = Moderations;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
-    extractCodeBox(response) {
-        return response;
+    parse(code, response, lines) {
+        const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
+        const trimmedResponse = response.trimStart();
+        const updatedCode = code + '\n' + lastLineIndentation + trimmedResponse;
+        return updatedCode;
     }
 }
 exports.OutputParser = OutputParser;

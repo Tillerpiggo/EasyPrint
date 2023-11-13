@@ -18,8 +18,13 @@ export class BackendController {
 
     async onHighlight(code: string): Promise<string> {
         const promptType = PromptType.SingleLine;
-        const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
-        return printStatement;
+
+        // Insert at the end of the code
+        const linesOfCode = code.split('\n')
+        const insertionLines = [linesOfCode.length]
+        
+        const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+        return codeWithPrintStatement;
     }
     
     async onHover(pos: vscode.Position): Promise<vscode.Range[]> {
