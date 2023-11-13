@@ -24,6 +24,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.window.showInformationMessage("OMG This is a keybinding that's fire");
 	});
 
+
 	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
 		const editor = vscode.window.activeTextEditor;
 
@@ -59,6 +60,13 @@ export function activate(context: vscode.ExtensionContext) {
 			editor.setDecorations(decorationType, decorations);
 		}
 	});
+
+	// Splitting up Debugging vs. Commenting:
+	// let keybindingComment = vscode.commands.registerCommand('easyprint.keybindingComment', () => {
+
+	// });
+
+
 
 	context.subscriptions.push(disposable);
 	context.subscriptions.push(keybinding);

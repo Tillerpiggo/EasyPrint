@@ -18,6 +18,9 @@ export class PromptGenerator {
       case PromptType.VariableTracking:
         prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
         break;
+      case PromptType.Comment: 
+        prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details.`;
+        break;
       default:
         return 'Invalid prompt type.';
     }
