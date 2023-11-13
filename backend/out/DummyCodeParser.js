@@ -15,8 +15,9 @@ class DummyCodeParser {
         return this.code;
     }
     getFileType() {
-        const fileExtension = this.code.split('.').pop() ?? "";
-        return FileType_1.fileTypeDict[fileExtension] ?? "Unknown";
+        var _a, _b;
+        const fileExtension = (_a = this.code.split('.').pop()) !== null && _a !== void 0 ? _a : "";
+        return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
 }
 exports.default = DummyCodeParser;

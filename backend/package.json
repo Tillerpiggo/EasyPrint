@@ -46,7 +46,8 @@
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile",
-    "test": "jest"
+    "test": "jest",
+    "tsc": "tsc"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.3",

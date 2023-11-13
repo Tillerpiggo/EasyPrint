@@ -128,8 +128,9 @@ class DummyCodeParser {
         return this.code;
     }
     getFileType() {
-        const fileExtension = this.code.split('.').pop() ?? "";
-        return FileType_1.fileTypeDict[fileExtension] ?? "Unknown";
+        var _a, _b;
+        const fileExtension = (_a = this.code.split('.').pop()) !== null && _a !== void 0 ? _a : "";
+        return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
 }
 exports["default"] = DummyCodeParser;
@@ -211,6 +212,9 @@ class PromptGenerator {
             case PromptType_1.PromptType.VariableTracking:
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
+            case PromptType_1.PromptType.Combinational:
+                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
+                break;
             default:
                 return 'Invalid prompt type.';
         }
@@ -234,6 +238,7 @@ var PromptType;
     PromptType["Conditional"] = "Conditional";
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
+    PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
 
 

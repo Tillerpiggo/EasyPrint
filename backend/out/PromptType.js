@@ -7,5 +7,6 @@ var PromptType;
     PromptType["Conditional"] = "Conditional";
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
+    PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
 //# sourceMappingURL=PromptType.js.map

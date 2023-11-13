@@ -5,19 +5,19 @@ const PromptGenerator_1 = require("./PromptGenerator");
 const APIController_1 = require("./APIController");
 const OutputParser_1 = require("./OutputParser");
 class PrintStatementGenerator {
-    constructor(apiKey) {
-        this.promptGenerator = new PromptGenerator_1.PromptGenerator();
+    constructor(apiKey, fileType) {
+        this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
         this.outputParser = new OutputParser_1.OutputParser();
     }
     async generatePrintStatement(promptType, code, maxTokens = 100) {
-        // Generate the prompt
+        console.log("prompt type: ", promptType);
         const prompt = this.promptGenerator.generate(promptType, code);
-        // Get the response from APIController
+        console.log("prompt: " + prompt);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        // Parse the response to get the first code block
+        console.log("apiResponse: " + apiResponse);
         const parsedResponse = this.outputParser.extractCodeBox(apiResponse);
-        // Return the code with the print statement
+        console.log("parsedResponse: " + parsedResponse);
         return `${parsedResponse}`;
     }
 }
