@@ -88,8 +88,28 @@ function activate(context) {
         highlightMode = !highlightMode;
         highlightScope();
     });
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const selected = editor.selection;
+            const text = editor.document.getText(selected);
+            const editor_document = editor.document;
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
+            backend.onHighlightComment(text).then(response => {
+                edit.replace(editor.document.uri, range, response);
+                vscode.workspace.applyEdit(edit);
+                vscode.window.showInformationMessage(response);
+            });
+            console.log("reached");
+        }
+    });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
+    context.subscriptions.push(keybindingCommentRequest);
 }
 exports.activate = activate;
 function deactivate() { }
@@ -145,6 +165,7 @@ class BackendController {
     constructor(filePath, apiKey) {
         this.codeParser = new CodeParser_1.default(filePath);
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
+        this.commentGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
     async onHighlight(code) {
         const promptType = PromptType_1.PromptType.SingleLine;
@@ -166,6 +187,13 @@ class BackendController {
             ranges.push(new vscode.Range(start, end));
         }
         return ranges;
+    }
+    async onHighlightComment(code) {
+        const promptType = PromptType_1.PromptType.Comment;
+        const endingLine = code.split('\n');
+        const insertionLines = [endingLine.length];
+        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
+        return codeWithComment;
     }
 }
 exports.BackendController = BackendController;
@@ -342,6 +370,12 @@ class PrintStatementGenerator {
         const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
         return `${parsedResponse}`;
     }
+    async insertComments(promptType, code, lines, maxTokens = 100) {
+        const prompt = this.promptGenerator.generate(promptType, code);
+        const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        return `${parsedResponse}`;
+    }
 }
 exports.PrintStatementGenerator = PrintStatementGenerator;
 
@@ -374,6 +408,9 @@ class PromptGenerator {
             case PromptType_1.PromptType.VariableTracking:
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
+            case PromptType_1.PromptType.Comment:
+                prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details.`;
+                break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
                 break;
@@ -400,6 +437,7 @@ var PromptType;
     PromptType["Conditional"] = "Conditional";
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
+    PromptType["Comment"] = "Comment";
     PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
 

@@ -35,6 +35,11 @@
         "key": "ctrl+alt+h",
         "mac": "cmd+shift+h",
         "when": "editorTextFocus"
+      },
+      {
+        "command": "easyprint.keybindingCommentRequest",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+shift+e"
       }
     ]
   },

@@ -3,5 +3,6 @@ export declare enum PromptType {
     Conditional = "Conditional",
     Loop = "Loop",
     VariableTracking = "VariableTracking",
+    Comment = "Comment",
     Combinational = "Combinational"
 }

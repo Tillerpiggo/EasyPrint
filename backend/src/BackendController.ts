@@ -9,11 +9,13 @@ export class BackendController {
     private codeParser: FileParser;
     private printStatementGenerator: PrintStatementGenerator;
     //private codeModifier: CodeModifier;
+    private commentGenerator: PrintStatementGenerator;
 
     constructor(filePath: string, apiKey: string) {
         this.codeParser = new CodeParser(filePath);
         this.printStatementGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
         //this.codeModifier = new CodeModifier();
+        this.commentGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
 
     async onHighlight(code: string): Promise<string> {
@@ -42,5 +44,17 @@ export class BackendController {
             ranges.push(new vscode.Range(start, end));
         }
         return ranges;
+    }
+
+    // Commenting
+    async onHighlightComment(code: string): Promise<string> {
+        const promptType = PromptType.Comment;
+
+        // We will add to the first line (above code we want to comment)
+        const endingLine = code.split('\n');
+        const insertionLines = [endingLine.length];
+
+        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
+        return codeWithComment;
     }
 }

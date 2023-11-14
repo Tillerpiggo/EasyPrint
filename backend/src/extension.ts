@@ -74,10 +74,37 @@ export function activate(context: vscode.ExtensionContext) {
     let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', () => {
         highlightMode = !highlightMode;
         highlightScope();
-    })
+    });
+
+
+	let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
+		const editor = vscode.window.activeTextEditor;
+
+		if (editor) {
+
+            const selected = editor.selection;
+            const text = editor.document.getText(selected);
+            const editor_document = editor.document;
+
+            // Send request to backend with request for comment
+            let backend = new BackendController(editor_document.fileName, APIKEY)
+            const startLine = selected.start;
+            const endLine = selected.end;
+
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
+            backend.onHighlightComment(text).then(response => {
+                edit.replace(editor.document.uri, range, response)
+                vscode.workspace.applyEdit(edit)
+                vscode.window.showInformationMessage(response)
+            });
+            console.log("reached");
+        }
+	});
 
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
+	context.subscriptions.push(keybindingCommentRequest);
 }
 
 // This method is called when your extension is deactivated
