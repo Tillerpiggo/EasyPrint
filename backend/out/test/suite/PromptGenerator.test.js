@@ -6,7 +6,7 @@ describe('PromptGenerator', () => {
         const generator = new PromptGenerator("Java");
         const code = 'const x = 10;';
         const prompt = generator.generate(PromptType.SingleLine, code);
-        expect(prompt).toBe("Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: const x = 10; Only respond with code in Java and no extra characters.");
+        expect(prompt).toBe("Add a SINGLE print statement to the following code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: const x = 10; Only respond with code in Java and no extra characters.");
     });
     it('should generate a Conditional prompt', () => {
         const generator = new PromptGenerator("Java");

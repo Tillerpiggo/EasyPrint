@@ -11,7 +11,7 @@ export class PromptGenerator {
     let prompt = '';
     switch(promptType){
       case PromptType.SingleLine:
-        prompt = `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: ${code}`
+        prompt = `Add a SINGLE print statement to the following code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: ${code}`
         //prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
         break;
       case PromptType.Conditional:
