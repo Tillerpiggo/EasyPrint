@@ -6,7 +6,7 @@ class DummyCodeParser {
         this.code = code;
     }
     getScopeAtPosition(point) {
-        return this.code;
+        return point.row;
     }
     getCodeAtLines(start, end) {
         return this.code;
