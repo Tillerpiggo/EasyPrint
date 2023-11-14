@@ -11,9 +11,8 @@ export class PromptGenerator {
     let prompt = '';
     switch(promptType){
       case PromptType.SingleLine:
-        return `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else.
-        The code: ${code}`
-        prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
+        prompt = `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: ${code}`
+        //prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
         break;
       case PromptType.Conditional:
         prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
@@ -23,6 +22,9 @@ export class PromptGenerator {
         break;
       case PromptType.VariableTracking:
         prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
+        break;
+      case PromptType.Combinational:
+        prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
         break;
       default:
         return 'Invalid prompt type.';

@@ -273,8 +273,9 @@ class CodeParser {
         return '';
     }
     getFileType() {
-        const fileExtension = this.filePath.split('.').pop() ?? "";
-        return FileType_1.fileTypeDict[fileExtension] ?? "Unknown";
+        var _a, _b;
+        const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
+        return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
 }
 exports["default"] = CodeParser;
@@ -362,9 +363,7 @@ class PromptGenerator {
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
-                return `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else.
-        The code: ${code}`;
-                prompt = `Write a print statement after this line of code "${code}". The print statement should display the variables involved and their values. Respond with the exact code plus your print statement.`;
+                prompt = `Add a SINGLE print statement to the following Python code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: ${code}`;
                 break;
             case PromptType_1.PromptType.Conditional:
                 prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
@@ -374,6 +373,9 @@ class PromptGenerator {
                 break;
             case PromptType_1.PromptType.VariableTracking:
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
+                break;
+            case PromptType_1.PromptType.Combinational:
+                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
                 break;
             default:
                 return 'Invalid prompt type.';
@@ -398,6 +400,7 @@ var PromptType;
     PromptType["Conditional"] = "Conditional";
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
+    PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
 
 
@@ -9708,7 +9711,8 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
     parse(code, response, lines) {
-        const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
+        var _a;
+        const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
         const trimmedResponse = response.trimStart();
         const updatedCode = code + '\n' + lastLineIndentation + trimmedResponse;
         return updatedCode;
