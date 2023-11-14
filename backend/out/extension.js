@@ -26,39 +26,63 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const BackendController_1 = require("./BackendController");
+const APIKEY = "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";
+let activeEditor;
+let decorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: 'purple'
+});
+let highlightMode = false;
+function highlightScope() {
+    activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+        const editor_document = activeEditor.document;
+        let backend = new BackendController_1.BackendController(editor_document.uri.fsPath, APIKEY);
+        const position = activeEditor.selection.active;
+        backend.onHover(position).then(response => {
+            if (highlightMode) {
+                activeEditor.setDecorations(decorationType, response);
+            }
+            else {
+                activeEditor.setDecorations(decorationType, []);
+            }
+        });
+    }
+}
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
-    let disposable = vscode.commands.registerCommand('easyprint.helloWorld', () => {
-        vscode.window.showInformationMessage('Hello World from easyprint!');
-    });
-    let keybinding = vscode.commands.registerCommand('easyprint.keybinding', () => {
-        vscode.window.showInformationMessage("OMG This is a keybinding that's fire");
-    });
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const selected = editor.selection;
             const text = editor.document.getText(selected);
-            const APIKEY = "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";
-            let backend = new BackendController_1.BackendController("filepath", APIKEY);
+            const editor_document = editor.document;
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
             backend.onHighlight(text).then(response => {
+                edit.replace(editor.document.uri, range, response);
+                vscode.workspace.applyEdit(edit);
                 vscode.window.showInformationMessage(response);
             });
             console.log("dummy dummy");
-            const startLine = selected.start;
-            const endLine = selected.end;
-            const decorationType = vscode.window.createTextEditorDecorationType({
-                backgroundColor: 'purple',
-            });
-            const range = new vscode.Range(startLine, endLine);
-            const decorations = [
-                { range, hoverMessage: 'highlighted section' },
-            ];
-            editor.setDecorations(decorationType, decorations);
         }
     });
-    context.subscriptions.push(disposable);
-    context.subscriptions.push(keybinding);
+    vscode.window.onDidChangeTextEditorSelection(event => {
+        console.log("highlight mode: ", highlightMode);
+        if (highlightMode) {
+            highlightScope();
+        }
+        else {
+            console.log("Not entered!!!");
+        }
+    }, null, context.subscriptions);
+    let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', () => {
+        highlightMode = !highlightMode;
+        highlightScope();
+    });
+    context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
 }
 exports.activate = activate;

@@ -1,3 +1,3 @@
 export declare class OutputParser {
-    extractCodeBox(response: string): string | null;
+    parse(code: string, response: string, lines: number[]): string | null;
 }

@@ -8,22 +8,16 @@ export class PrintStatementGenerator {
   private apiController: APIController;
   private outputParser: OutputParser;
 
-  constructor(apiKey: string) {
-    this.promptGenerator = new PromptGenerator();
+  constructor(apiKey: string, fileType: string) {
+    this.promptGenerator = new PromptGenerator(fileType);
     this.apiController = new APIController(apiKey);
     this.outputParser = new OutputParser();
   }
-  async generatePrintStatement(promptType: PromptType, code: string, maxTokens: number = 100): Promise<string> {
-    // Generate the prompt
+  async insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
     const prompt = this.promptGenerator.generate(promptType, code);
-    console.log("prompt: " + prompt)
-    // Get the response from APIController
     const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-    console.log("apiResponse: " + apiResponse)
-    // Parse the response to get the first code block
-    const parsedResponse = this.outputParser.extractCodeBox(apiResponse);
-    console.log("parsedResponse: " + parsedResponse)
-    // Return the code with the print statement
+    const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+
     return `${parsedResponse}`;
   }
 }
