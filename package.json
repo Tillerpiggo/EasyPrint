@@ -10,7 +10,10 @@
   },
   "devDependencies": {
     "@electron/rebuild": "^3.3.0",
+<<<<<<< HEAD
     "@types/jest": "^29.5.8",
+=======
+>>>>>>> cf374112ab61de04d0d7115fa32594a8698744b6
     "jest": "^29.7.0",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2",
