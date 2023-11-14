@@ -1,12 +1,14 @@
 import { fileTypeDict } from "./FileType";
+import * as vscode from "vscode";
+const Parser = require('web-tree-sitter');
 
-interface Point {
+export interface Point {
   row: number;
   col: number;
 }
 
 export interface FileParser {
-  getScopeAtPosition(point: Point): string;
+  getScopeAtPosition(point: vscode.Position): number[];
   getCodeAtLines(start: number, end: number): string;
   getLastDescendant(node: any): any;
   getFileType(): string;
@@ -17,12 +19,24 @@ class DummyCodeParser implements FileParser {
 
   constructor(code: string) {
     this.code = code;
+		(async () => {
+			await Parser.init();
+			const parser = new Parser();
+			// const absolute = path.join(context.extensionPath, 'tree-sitter-javascript.wasm')
+			// const wasm = path.relative(process.cwd(), absolute)
+			// const lang = await Parser.Language.load(wasm);
+			
+			const lang = await Parser.Language.load('Users/macha/easyprint/backend/tree-sitter-javascript.wasm')
+			parser.setLanguage(lang);
+			const tree = parser.parse('let z = 5;');
+			console.log("syntax tree: ", tree.rootNode.toString());
+		})();
   }
 
   // Get the smallest node that includes a given point
-  getScopeAtPosition(point: any): string {
+  getScopeAtPosition(point: any): number[] {
     // Always return the same code, regardless of the point
-    return this.code;
+    return point.row;
   }
 
   // Get the code between two line numbers
