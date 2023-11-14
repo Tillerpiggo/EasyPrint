@@ -13,16 +13,16 @@ Track specific variables using print statements after variable is changed
 
 # How to Install the Software
 - Clone the repository
-- cd into the directory where you installed the respository
+- Inthe terminal, change into the directory where you installed the respository
 - run 'npm install' to install the dependencies
 
 # How to Run the Software
 - Open the extension.ts file and paste in your OpenAI's API key in the file.
-- Hit 'fn + F5' buttons to start the extension
+- Hit 'fn + F5' on mac or 'F5' on windows buttons to start the extension
 - A new window pops up where you can use the extension to start debugging your code
 
 # How to Use the Software
-- Go to the line where you want to add a print statement
+- Highlight the line where you want to add a print statement
 - Hit 'cmd + shift + h' in Mac or 'ctrl + alt + h' to generate print statements which are then added to the code
 
 # How to Report a Bug
