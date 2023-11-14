@@ -1,9 +1,18 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const FileType_1 = require("./FileType");
+const Parser = require('web-tree-sitter');
 class DummyCodeParser {
     constructor(code) {
         this.code = code;
+        (async () => {
+            await Parser.init();
+            const parser = new Parser();
+            const lang = await Parser.Language.load('Users/macha/easyprint/backend/tree-sitter-javascript.wasm');
+            parser.setLanguage(lang);
+            const tree = parser.parse('let z = 5;');
+            console.log("syntax tree: ", tree.rootNode.toString());
+        })();
     }
     getScopeAtPosition(point) {
         return point.row;

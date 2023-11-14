@@ -106,4 +106,3 @@ class CodeParser implements FileParser {
 }
 
 export default CodeParser;
->>>>>>> 52c73e55d501b710d467f3ce54207353d52c4fd8

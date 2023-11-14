@@ -27,23 +27,24 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BackendController = void 0;
-const DummyCodeParser_1 = __importDefault(require("./DummyCodeParser"));
+const CodeParser_1 = __importDefault(require("./CodeParser"));
 const PrintStatementGenerator_1 = require("./PrintStatementGenerator");
 const PromptType_1 = require("./PromptType");
 const vscode = __importStar(require("vscode"));
 class BackendController {
     constructor(filePath, apiKey) {
-        this.filePath = filePath;
-        this.codeParser = new DummyCodeParser_1.default(this.filePath);
-        const fileType = this.codeParser.getFileType();
-        this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, fileType);
+        this.codeParser = new CodeParser_1.default(filePath);
+        this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
     async onHighlight(code) {
         const promptType = PromptType_1.PromptType.SingleLine;
-        const printStatement = await this.printStatementGenerator.generatePrintStatement(promptType, code);
-        return printStatement;
+        const linesOfCode = code.split('\n');
+        const insertionLines = [linesOfCode.length];
+        const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+        return codeWithPrintStatement;
     }
-    onHover(filePath, pos) {
+    async onHover(pos) {
+        await this.codeParser.initializeParserAndTree();
         const linesToHighlight = this.codeParser.getScopeAtPosition(pos);
         let ranges = [];
         for (let line of linesToHighlight) {

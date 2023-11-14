@@ -1,26 +1,4 @@
 "use strict";
-<<<<<<< HEAD
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.CodeParser = void 0;
-const PromptType_1 = require("./PromptType");
-class CodeParser {
-    determinePromptType(input) {
-        const conditionalKeywords = ['if', 'else if', 'else', 'switch', 'case'];
-        const loopKeywords = ['for', 'while', 'do'];
-        if (loopKeywords.some(keyword => input.includes(keyword)) && conditionalKeywords.some(keyword => input.includes(keyword))) {
-            return PromptType_1.PromptType.Combinational;
-        }
-        if (loopKeywords.some(keyword => input.includes(keyword))) {
-            return PromptType_1.PromptType.Loop;
-        }
-        if (conditionalKeywords.some(keyword => input.includes(keyword))) {
-            return PromptType_1.PromptType.Conditional;
-        }
-        return PromptType_1.PromptType.SingleLine;
-    }
-}
-exports.CodeParser = CodeParser;
-=======
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -45,27 +23,51 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const Parser = require('tree-sitter');
-const JavaScript = require('tree-sitter-javascript');
 const fs = __importStar(require("fs"));
+const path = __importStar(require("path"));
 const FileType_1 = require("./FileType");
+const Parser = require("web-tree-sitter");
 class CodeParser {
     constructor(filePath) {
         this.filePath = filePath;
-        const fileType = this.getFileType();
-        let fileLanguage;
-        const parser = new Parser();
-        parser.setLanguage(fileLanguage);
-        this.sourceCode = fs.readFileSync(filePath, 'utf-8');
-        this.tree = parser.parse(this.sourceCode);
+        this.fileType = this.getFileType();
+        this.sourceCode = '';
     }
-    getScopeAtPosition(point) {
+    async initializeParserAndTree() {
+        this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
+        await Parser.init();
+        this.parser = new Parser();
+        await this.setParserLanguage();
+        this.tree = this.parser.parse(this.sourceCode);
+    }
+    async setParserLanguage() {
+        let wasmFilePath = '';
+        const wasmDir = path.join(__dirname, '..', 'Parsers');
+        if (this.fileType == "Python") {
+            wasmFilePath = path.join(wasmDir, 'tree-sitter-python.wasm');
+        }
+        else if (this.fileType == "JavaScript") {
+            wasmFilePath = path.join(wasmDir, 'tree-sitter-javascript.wasm');
+        }
+        else if (this.fileType == "Java") {
+            wasmFilePath = path.join(wasmDir, 'tree-sitter-java.wasm');
+        }
+        else if (this.fileType == "TypeScript") {
+            wasmFilePath = path.join(wasmDir, 'tree-sitter-typescript.wasm');
+        }
+        this.lang = await Parser.Language.load(wasmFilePath);
+        this.parser.setLanguage(this.lang);
+    }
+    getScopeAtPosition(vs_point) {
+        const point = {
+            row: vs_point.line,
+            column: vs_point.character
+        };
         const line = this.getLineAtPosition(point);
         if (!line || /^\s*$/.test(line)) {
             return [];
         }
         const node = this.tree.rootNode.namedDescendantForPosition(point);
-        console.log("node:" + node);
         const start = node.startPosition.row;
         const lastNode = this.getLastDescendant(node);
         const end = lastNode.endPosition.row;
@@ -87,16 +89,16 @@ class CodeParser {
     }
     getLineAtPosition(point) {
         const lines = this.sourceCode.split('\n');
-        if (point.line >= 0 && point.line < lines.length) {
-            return lines[point.line];
+        if (point.row >= 0 && point.row < lines.length) {
+            return lines[point.row];
         }
         return '';
     }
     getFileType() {
-        const fileExtension = this.filePath.split('.').pop() ?? "";
-        return FileType_1.fileTypeDict[fileExtension] ?? "Unknown";
+        var _a, _b;
+        const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
+        return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
 }
 exports.default = CodeParser;
->>>>>>> 52c73e55d501b710d467f3ce54207353d52c4fd8
 //# sourceMappingURL=CodeParser.js.map
