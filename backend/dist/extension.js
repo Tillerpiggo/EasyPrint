@@ -273,14 +273,9 @@ class CodeParser {
         return '';
     }
     getFileType() {
-<<<<<<< HEAD
         var _a, _b;
         const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
         return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
-=======
-        const fileExtension = this.filePath.split('.').pop() ?? "";
-        return FileType_1.fileTypeDict[fileExtension] ?? "Unknown";
->>>>>>> cf374112ab61de04d0d7115fa32594a8698744b6
     }
 }
 exports["default"] = CodeParser;
