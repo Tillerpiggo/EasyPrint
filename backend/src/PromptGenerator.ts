@@ -25,6 +25,7 @@ export class PromptGenerator {
         break;
       case PromptType.Comment: 
         prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details.`;
+        break;
       case PromptType.Combinational:
         prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
         break;
