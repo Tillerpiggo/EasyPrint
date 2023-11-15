@@ -8,4 +8,5 @@ var PromptType;
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
     PromptType["Combinational"] = "Combinational";
+    PromptType["Comment"] = "Comment";
 })(PromptType || (exports.PromptType = PromptType = {}));
