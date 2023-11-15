@@ -1,3 +1,3 @@
 export declare class OutputParser {
-    parse(code: string, response: string, lines: number[]): string | null;
+    parse(code: string, response: string, lines: number[]): string;
 }

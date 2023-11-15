@@ -374,6 +374,9 @@ class PromptGenerator {
             case PromptType_1.PromptType.VariableTracking:
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
+            case PromptType_1.PromptType.Comment:
+                prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details.`;
+                break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
                 break;
@@ -400,6 +403,7 @@ var PromptType;
     PromptType["Conditional"] = "Conditional";
     PromptType["Loop"] = "Loop";
     PromptType["VariableTracking"] = "VariableTracking";
+    PromptType["Comment"] = "Comment";
     PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
 
@@ -421,13 +425,19 @@ class APIController {
         this.openai = new openai_1.default({ apiKey });
     }
     async generateResponse(prompt, maxTokens = 100) {
-        const response = await this.openai.completions.create({
-            model: 'text-davinci-002',
-            prompt: prompt,
-            max_tokens: maxTokens,
-            temperature: 0.0
+        const response = await this.openai.chat.completions.create({
+            model: 'gpt-3.5-turbo-1106',
+            messages: [
+                { "role": "system", "content": "You are EasyPrint, the world's best printing plugin." },
+                { "role": "user", "content": prompt },
+            ]
         });
-        return response.choices[0].text.trim();
+        if (response && response.choices && response.choices.length > 0 && response.choices[0].message && response.choices[0].message.content) {
+            return response.choices[0].message.content.trim();
+        }
+        else {
+            return "FAIL";
+        }
     }
 }
 exports.APIController = APIController;
@@ -9714,7 +9724,17 @@ class OutputParser {
         var _a;
         const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
         const trimmedResponse = response.trimStart();
-        const updatedCode = code + '\n' + lastLineIndentation + trimmedResponse;
+        let responseLines = trimmedResponse.split('\n');
+        let inCodeBlock = false;
+        responseLines = responseLines.filter(line => {
+            if (line.startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                return false;
+            }
+            return inCodeBlock;
+        });
+        const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
+        const updatedCode = code + '\n' + indentedResponse;
         return updatedCode;
     }
 }
