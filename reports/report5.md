@@ -79,3 +79,24 @@
 ### Plans
 - Finish all UI stuff, loading, hovering, and word-by-word appearance and ensure
 - Look more into VSCode extension documentation to make sure UI doesn't detract from user experience
+
+## Akash Prasad
+
+### Goals
+- Work on highlighting groupings of text - such as multiple instances of the same variable
+- Figure out some end-to-end way to create print statements for handling groupings
+- Figure out how to remove print statements:
+    - add "\\ Added by EasyPrint" to identify print statements
+    - naively go through the file and remove those lines
+
+### Progress 
+- Created an on-hover function to highlight the current line the cursor is on
+- Worked with Tyler and Macha to work end-to-end on the code parser sorting out the semantics of the file
+- Changed AI to use gpt-turbo-3.5 to hopefully create better print statements
+
+### Plans
+- Figure out how to remove print statements:
+    - add "\\ Added by EasyPrint" to identify print statements
+    - naively go through the file and remove those lines
+- Maybe help with token-by-token printing
+- Perhaps adjust testing infrastructure with Tyler R
