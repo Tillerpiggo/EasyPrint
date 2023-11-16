@@ -146,7 +146,7 @@ class CodeParser implements FileParser {
     const fileExtension = this.filePath.split('.').pop() ?? "";
     // Use the dictionary to determine the file type from extension
     return fileTypeDict[fileExtension] ?? "Unknown";
-  }
+  }  
 }
 
 export default CodeParser;

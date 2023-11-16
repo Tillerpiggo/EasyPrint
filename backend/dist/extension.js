@@ -399,7 +399,7 @@ class PrintStatementGenerator {
     constructor(apiKey, fileType) {
         this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
-        this.outputParser = new OutputParser_1.OutputParser();
+        this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
     async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
@@ -9791,6 +9791,9 @@ exports.Moderations = Moderations;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
+    constructor(fileType) {
+        this.fileType = fileType;
+    }
     parse(code, response, lines) {
         var _a;
         const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
@@ -9806,7 +9809,18 @@ class OutputParser {
         });
         const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
         const updatedCode = code + '\n' + indentedResponse;
-        return updatedCode;
+        let comment = "";
+        switch (this.fileType) {
+            case 'Python':
+                comment = " #";
+                break;
+            case 'JavaScript' || 0 || 0:
+                comment = " //";
+                break;
+        }
+        const easyPrintTag = "Added by EasyPrint";
+        const finalTag = comment + " " + easyPrintTag;
+        return updatedCode + finalTag;
     }
 }
 exports.OutputParser = OutputParser;
