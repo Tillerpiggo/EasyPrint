@@ -76,7 +76,6 @@ function activate(context) {
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {
-        console.log("highlight mode: ", highlightMode);
         if (highlightMode) {
             highlightScope();
         }
@@ -238,6 +237,12 @@ class CodeParser {
         this.filePath = filePath;
         this.fileType = this.getFileType();
         this.sourceCode = '';
+        if (this.fileType === "Python" || this.fileType === "Java") {
+            this.blockName = "block";
+        }
+        else {
+            this.blockName = "statement_block";
+        }
     }
     async initializeParserAndTree() {
         this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
@@ -265,6 +270,7 @@ class CodeParser {
         this.parser.setLanguage(this.lang);
     }
     getScopeAtPosition(vs_point) {
+        this.printTree(this.tree.rootNode, 0);
         const point = {
             row: vs_point.line,
             column: vs_point.character
@@ -273,11 +279,42 @@ class CodeParser {
         if (!line || /^\s*$/.test(line)) {
             return [];
         }
-        const node = this.tree.rootNode.namedDescendantForPosition(point);
-        const start = node.startPosition.row;
+        return this.getLineRanges(point.row);
+    }
+    printTree(node, depth) {
+        console.log(`${'  '.repeat(depth)}${node.type} : ${node.startPosition.row + 1}`);
+        for (const childNode of node.children) {
+            this.printTree(childNode, depth + 1);
+        }
+    }
+    getLineRanges(targetLine) {
+        let node;
+        if (this.fileType === "Python") {
+            node = this.getNodeAtLine(this.tree.rootNode, targetLine + 1);
+        }
+        else {
+            node = this.getNodeAtLine(this.tree.rootNode, targetLine);
+        }
+        if (!node) {
+            return [targetLine, targetLine];
+        }
         const lastNode = this.getLastDescendant(node);
         const end = lastNode.endPosition.row;
-        return [start, end];
+        return [targetLine, end];
+    }
+    getNodeAtLine(node, targetLine) {
+        if (!node || node.startPosition.row > targetLine) {
+            return null;
+        }
+        if (node.startPosition.row === targetLine && (node.type === this.blockName || node.type === "class_declaration")) {
+            return node;
+        }
+        for (let i = 0, childCount = node.childCount; i < childCount; i++) {
+            const ret_node = this.getNodeAtLine(node.child(i), targetLine);
+            if (ret_node) {
+                return ret_node;
+            }
+        }
     }
     getCodeAtLines(start, end) {
         const lines = this.sourceCode.split('\n');
@@ -289,7 +326,7 @@ class CodeParser {
             return node;
         }
         else {
-            const lastChild = node.lastNamedChild;
+            const lastChild = node.lastChild;
             return this.getLastDescendant(lastChild);
         }
     }

@@ -14,6 +14,9 @@ export interface FileParser {
     initializeParserAndTree(): Promise<void>;
     setParserLanguage(): Promise<void>;
     getScopeAtPosition(point: vscode.Position): number[];
+    printTree(node: any, depth: number): void,
+    getLineRanges(targetLine: number): number[],
+    getNodeAtLine(node: any, targetLine: number): any,
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
@@ -25,6 +28,7 @@ class CodeParser implements FileParser {
   private tree: any;
   private sourceCode: string;
   private lang: any;
+  private blockName: string;
 
   public fileType: string;
 
@@ -32,6 +36,11 @@ class CodeParser implements FileParser {
     this.filePath = filePath
     this.fileType = this.getFileType();
     this.sourceCode = ''
+    if (this.fileType === "Python" || this.fileType === "Java") {
+      this.blockName = "block";
+    } else {
+      this.blockName = "statement_block"
+    }
   }
 
   async initializeParserAndTree() {
@@ -59,6 +68,7 @@ class CodeParser implements FileParser {
   }
 
   getScopeAtPosition(vs_point: vscode.Position): number[] {
+    this.printTree(this.tree.rootNode, 0);
     const point = {
       row: vs_point.line,
       column: vs_point.character
@@ -67,11 +77,45 @@ class CodeParser implements FileParser {
     if (!line || /^\s*$/.test(line)) {
       return [];
     }
-    const node = this.tree.rootNode.namedDescendantForPosition(point);
-    const start = node.startPosition.row;
+    return this.getLineRanges(point.row);
+  }
+
+  printTree(node: any, depth: number): void {
+    console.log(`${'  '.repeat(depth)}${node.type} : ${node.startPosition.row + 1}`);
+  
+    for (const childNode of node.children) {
+      this.printTree(childNode, depth + 1);
+    }
+  }
+
+  getLineRanges(targetLine: number): number[] {
+    let node: any;
+    if (this.fileType === "Python") {
+      node = this.getNodeAtLine(this.tree.rootNode, targetLine + 1);
+    } else {
+     node = this.getNodeAtLine(this.tree.rootNode, targetLine);
+    }
+    if (!node) { 
+      return [targetLine, targetLine];
+    }
     const lastNode = this.getLastDescendant(node);
     const end = lastNode.endPosition.row;
-    return [start, end];
+    return [targetLine, end];
+  }
+
+  getNodeAtLine(node: any, targetLine: number): any {
+    if (!node || node.startPosition.row > targetLine) {
+      return null;
+    }
+    if (node.startPosition.row === targetLine && (node.type === this.blockName || node.type === "class_declaration")) {
+      return node;
+    }
+    for (let i = 0, childCount = node.childCount; i < childCount; i++) {
+      const ret_node = this.getNodeAtLine(node.child(i), targetLine);
+      if (ret_node) {
+        return ret_node;
+      }
+    }
   }
 
   getCodeAtLines(start: number, end: number): string {
@@ -84,7 +128,7 @@ class CodeParser implements FileParser {
     if (node.childCount === 0) {
       return node;
     } else {
-      const lastChild = node.lastNamedChild;
+      const lastChild = node.lastChild;
       return this.getLastDescendant(lastChild);
     }
   }
