@@ -15,9 +15,15 @@ export class PrintStatementGenerator {
   }
   async insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
     const prompt = this.promptGenerator.generate(promptType, code);
-    const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+    const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+    
+    let apiResponse = '';
+    for await (const token of responseGenerator) {
+      apiResponse += token;
+    }
+    
     const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
-
+  
     return `${parsedResponse}`;
   }
   async insertComments(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
