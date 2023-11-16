@@ -62,9 +62,6 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     vscode.window.onDidChangeTextEditorSelection(event => {
-        console.log("highlight mode: ", highlightMode);
-        // if (event.textEditor === activeEditor && highlightMode) {
-        //     highlightScope();
         if (highlightMode) {
             highlightScope();
         } else {
