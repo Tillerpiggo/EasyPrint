@@ -57,4 +57,9 @@ export class BackendController {
         const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
         return codeWithComment;
     }
+    
+    // Deleting
+    deleteComments(): number[] {
+        return this.codeParser.findEasyPrintLines();
+    }
 }
