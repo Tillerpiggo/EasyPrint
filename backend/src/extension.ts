@@ -99,14 +99,39 @@ export function activate(context: vscode.ExtensionContext) {
         }
 	});
 
-    // let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {    
+        const editor = vscode.window.activeTextEditor;
 
+        if (editor) {
 
-    // })
+            const editor_document = editor.document;
+
+            editor.edit(editBuilder => {
+            // Sort line numbers in descending order to avoid issues with changing line indices
+            let backend = new BackendController(editor_document.fileName, APIKEY);
+            let lineNumbers = backend.deleteComments();
+
+            lineNumbers.sort((a, b) => b - a);
+
+            lineNumbers.forEach(lineNumber => {
+                if (lineNumber < editor.document.lineCount) {
+                    const line = editor.document.lineAt(lineNumber);
+                    editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                } else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
+            });
+    }});
 
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
 	context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 
 // This method is called when your extension is deactivated

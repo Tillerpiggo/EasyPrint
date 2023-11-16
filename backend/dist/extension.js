@@ -106,9 +106,34 @@ function activate(context) {
             console.log("reached");
         }
     });
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const editor_document = editor.document;
+            editor.edit(editBuilder => {
+                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                let lineNumbers = backend.deleteComments();
+                lineNumbers.sort((a, b) => b - a);
+                lineNumbers.forEach(lineNumber => {
+                    if (lineNumber < editor.document.lineCount) {
+                        const line = editor.document.lineAt(lineNumber);
+                        editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                }
+                else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
+            });
+        }
+    });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
     context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 exports.activate = activate;
 function deactivate() { }
@@ -193,6 +218,9 @@ class BackendController {
         const insertionLines = [endingLine.length];
         const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
         return codeWithComment;
+    }
+    deleteComments() {
+        return this.codeParser.findEasyPrintLines();
     }
 }
 exports.BackendController = BackendController;
@@ -341,6 +369,16 @@ class CodeParser {
         var _a, _b;
         const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
         return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
+    }
+    findEasyPrintLines() {
+        const lineNumbers = [];
+        let searchString = "Added by EasyPrint";
+        this.sourceCode.split('\n').forEach((line, index) => {
+            if (line.includes(searchString)) {
+                lineNumbers.push(index + 1);
+            }
+        });
+        return lineNumbers;
     }
 }
 exports["default"] = CodeParser;

@@ -20,6 +20,7 @@ export interface FileParser {
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
+    findEasyPrintLines(): number[];
   }
 
 class CodeParser implements FileParser {
