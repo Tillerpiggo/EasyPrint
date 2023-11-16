@@ -3,7 +3,7 @@
 import * as vscode from 'vscode';
 import { BackendController } from './BackendController';
 
-const APIKEY= "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";
+const APIKEY= "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";
 let activeEditor: any;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
