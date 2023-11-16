@@ -146,7 +146,19 @@ class CodeParser implements FileParser {
     const fileExtension = this.filePath.split('.').pop() ?? "";
     // Use the dictionary to determine the file type from extension
     return fileTypeDict[fileExtension] ?? "Unknown";
-  }  
+  }
+  
+  findEasyPrintLines(): number[] {
+    const lineNumbers: number[] = [];
+    let searchString = "Added by EasyPrint"
+    this.sourceCode.split('\n').forEach((line, index) => {
+      if (line.includes(searchString)) {
+        lineNumbers.push(index + 1); // +1 because line numbers are 1-based in VS Code
+      }
+    });
+
+    return lineNumbers; 
+  }
 }
 
 export default CodeParser;
