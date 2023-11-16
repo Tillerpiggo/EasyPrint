@@ -37,7 +37,9 @@ export class OutputParser {
             case 'Python':
                 comment = " #";
                 break;
-            case 'JavaScript' || 'TypeScript' || 'Java':
+            case 'JavaScript': 
+            case 'TypeScript': 
+            case 'Java':
                 comment = " //";
                 break;
         }

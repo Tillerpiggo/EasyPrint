@@ -150,14 +150,15 @@ class CodeParser implements FileParser {
   }
   
   findEasyPrintLines(): number[] {
+    this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
     const lineNumbers: number[] = [];
     let searchString = "Added by EasyPrint"
     this.sourceCode.split('\n').forEach((line, index) => {
       if (line.includes(searchString)) {
-        lineNumbers.push(index + 1); // +1 because line numbers are 1-based in VS Code
+        lineNumbers.push(index); // +1 because line numbers are 1-based in VS Code
       }
     });
-
+    console.log(lineNumbers)
     return lineNumbers; 
   }
 }

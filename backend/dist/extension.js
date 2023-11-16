@@ -32,7 +32,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const BackendController_1 = __webpack_require__(2);
-const APIKEY = "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";
+const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
@@ -371,13 +371,15 @@ class CodeParser {
         return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
     findEasyPrintLines() {
+        this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
         const lineNumbers = [];
         let searchString = "Added by EasyPrint";
         this.sourceCode.split('\n').forEach((line, index) => {
             if (line.includes(searchString)) {
-                lineNumbers.push(index + 1);
+                lineNumbers.push(index);
             }
         });
+        console.log(lineNumbers);
         return lineNumbers;
     }
 }
@@ -9852,7 +9854,9 @@ class OutputParser {
             case 'Python':
                 comment = " #";
                 break;
-            case 'JavaScript' || 0 || 0:
+            case 'JavaScript':
+            case 'TypeScript':
+            case 'Java':
                 comment = " //";
                 break;
         }
