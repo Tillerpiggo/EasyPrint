@@ -63,3 +63,19 @@
 - Architect system for tracking, deleting, caching, and queuing print statements
 - Create refined prompts for different use cases
 - Integrate API controller with stream to provide ChatGPT-like token-by-token interface
+
+
+## Aishah Vakil
+
+### Goals
+- Add more UI functionality for more feedback loops on user side
+- Fix commenting feature
+
+### Progress
+- Added prompts for commenting
+- Set up commenting feature and added keybinding for it (not fully implemented on backend yet, just need to add comment syntax)
+- Began working on loading, hovering highlight, and word by word appearance
+
+### Plans
+- Finish all UI stuff, loading, hovering, and word-by-word appearance and ensure
+- Look more into VSCode extension documentation to make sure UI doesn't detract from user experience
