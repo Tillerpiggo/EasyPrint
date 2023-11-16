@@ -45,3 +45,21 @@
 ### Plans
 - Finish the final version of codeparser.
 - Write an output parser that is able to take the input from openAI API and modify the code on the VSCode UI.
+
+## Tyler Gee
+
+### Goals
+- Refine prompts significantly (may require reshaping architecture)
+- Finish Code Parser that creates groupings
+- Help shape UI to accept/display code parser groupings
+- Architect system for tracking, deleting, caching, and queuing print statements
+
+### Progress
+- Changed prompts to just generate print statements and to use gpt-3.5-turbo-1106 rather than text-davinci-003. Still needs refining but much better than before
+- Worked with Macha to progress on Code Parser; got certain cases working
+- Got highlighting UI to work using backend/code parser's highlighting
+
+### Plans
+- Architect system for tracking, deleting, caching, and queuing print statements
+- Create refined prompts for different use cases
+- Integrate API controller with stream to provide ChatGPT-like token-by-token interface
