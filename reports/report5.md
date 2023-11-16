@@ -34,3 +34,14 @@
 - Develop backend processes to remove the print statements
 - Develop the data structure to store the print statements that we add in order to remove them if needed
   
+## Macha Vidyaaranya
+### Goals
+- Finish the code parser to identify blocks and classify as loops, condition, single statement or variable tracking classes which forms the basis for generating the prompt
+- Build automated tests for this feature and also for the feature for extracting a file's extension
+
+### Progress
+- Finished writing an initial version of codeparser that is able to take as input user action and highlight the lines where print statements are to be added
+
+### Plans
+- Finish the final version of codeparser.
+- Write an output parser that is able to take the input from openAI API and modify the code on the VSCode UI.
