@@ -99,6 +99,11 @@ export function activate(context: vscode.ExtensionContext) {
         }
 	});
 
+    // let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+
+
+    // })
+
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
 	context.subscriptions.push(keybindingCommentRequest);
