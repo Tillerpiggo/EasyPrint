@@ -13,7 +13,16 @@ export class PrintStatementGenerator {
     this.apiController = new APIController(apiKey);
     this.outputParser = new OutputParser();
   }
-  async insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
+  async *insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): AsyncGenerator<string, void, unknown> {
+    const prompt = this.promptGenerator.generate(promptType, code);
+    const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+    
+    for await (const updatedCode of this.outputParser.processTokens(code, responseGenerator, lines)) {
+      yield updatedCode;
+    }
+  }
+  
+  async insertComments(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
     const prompt = this.promptGenerator.generate(promptType, code);
     const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
     
@@ -24,13 +33,6 @@ export class PrintStatementGenerator {
     
     const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
   
-    return `${parsedResponse}`;
-  }
-  async insertComments(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
-    const prompt = this.promptGenerator.generate(promptType, code);
-    const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-    const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
-
     return `${parsedResponse}`;
   }
 }

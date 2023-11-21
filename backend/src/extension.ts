@@ -35,28 +35,41 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "easyprint" is now active!');
 
 
-	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
+	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
         const editor = vscode.window.activeTextEditor;
-
+    
         if (editor) {
             const selected = editor.selection;
             // get text and store it in a variable
             const text = editor.document.getText(selected);
             // get the document that is open in the editor
             const editor_document = editor.document;
-
+    
             // send the text to the backend controller
             let backend = new BackendController(editor_document.fileName, APIKEY)
-            const startLine = selected.start;
-            const endLine = selected.end;
+            let startLine = selected.start;
+            let endLine = selected.end;
 
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            backend.onHighlight(text).then(response => {
+            let range = new vscode.Range(startLine, endLine);
+            
+            for await (const response of backend.onHighlight(text)) {
+                const edit = new vscode.WorkspaceEdit();
+
+                // Replace the range with the response
                 edit.replace(editor.document.uri, range, response)
-                vscode.workspace.applyEdit(edit)
+                await vscode.workspace.applyEdit(edit)
+
+                const responseLines = (response.match(/\n/g) || []).length;
+                if (startLine.line + responseLines < editor.document.lineCount) {
+                    endLine = editor.document.lineAt(startLine.line + responseLines).range.end;
+                }
+
+                // Update the range
+                range = new vscode.Range(startLine, endLine);
+
                 vscode.window.showInformationMessage(response)
-            });
+            };
+        
             console.log("dummy dummy");
         }
     });
