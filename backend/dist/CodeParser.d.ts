@@ -14,6 +14,7 @@ export interface FileParser {
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
+    findEasyPrintLines(): number[];
 }
 declare class CodeParser implements FileParser {
     private filePath;
@@ -34,5 +35,6 @@ declare class CodeParser implements FileParser {
     getLastDescendant(node: any): any;
     getLineAtPosition(point: Point): string;
     getFileType(): string;
+    findEasyPrintLines(): number[];
 }
 export default CodeParser;

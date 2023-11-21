@@ -11,7 +11,7 @@ export class PrintStatementGenerator {
   constructor(apiKey: string, fileType: string) {
     this.promptGenerator = new PromptGenerator(fileType);
     this.apiController = new APIController(apiKey);
-    this.outputParser = new OutputParser();
+    this.outputParser = new OutputParser(fileType);
   }
   async insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
     const prompt = this.promptGenerator.generate(promptType, code);

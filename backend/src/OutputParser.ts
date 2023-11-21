@@ -1,5 +1,10 @@
 export class OutputParser {
     
+    private fileType;
+    constructor(fileType: string) {
+        this.fileType = fileType;
+    }
+
     parse(code: string, response: string, lines: number[]): string {
         // Find the indentation of the last non-empty line
         const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
@@ -26,6 +31,23 @@ export class OutputParser {
         // Append the indented response to the code
         const updatedCode = code + '\n' + indentedResponse;
 
-        return updatedCode;
+        // Append the "added by EasyPrint" comment to the end of the line in the correct language
+        let comment: String = "";
+        switch (this.fileType){
+            case 'Python':
+                comment = " #";
+                break;
+            case 'JavaScript': 
+            case 'TypeScript': 
+            case 'Java':
+                comment = " //";
+                break;
+        }
+
+        const easyPrintTag = "Added by EasyPrint";
+
+        const finalTag = comment + " " + easyPrintTag;
+
+        return updatedCode + finalTag;
     }
 }

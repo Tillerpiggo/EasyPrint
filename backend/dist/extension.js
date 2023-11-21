@@ -32,7 +32,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const BackendController_1 = __webpack_require__(2);
-const APIKEY = "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";
+const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
@@ -106,9 +106,34 @@ function activate(context) {
             console.log("reached");
         }
     });
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const editor_document = editor.document;
+            editor.edit(editBuilder => {
+                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                let lineNumbers = backend.deleteComments();
+                lineNumbers.sort((a, b) => b - a);
+                lineNumbers.forEach(lineNumber => {
+                    if (lineNumber < editor.document.lineCount) {
+                        const line = editor.document.lineAt(lineNumber);
+                        editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                }
+                else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
+            });
+        }
+    });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
     context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 exports.activate = activate;
 function deactivate() { }
@@ -193,6 +218,9 @@ class BackendController {
         const insertionLines = [endingLine.length];
         const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
         return codeWithComment;
+    }
+    deleteComments() {
+        return this.codeParser.findEasyPrintLines();
     }
 }
 exports.BackendController = BackendController;
@@ -342,6 +370,18 @@ class CodeParser {
         const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
         return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
+    findEasyPrintLines() {
+        this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
+        const lineNumbers = [];
+        let searchString = "Added by EasyPrint";
+        this.sourceCode.split('\n').forEach((line, index) => {
+            if (line.includes(searchString)) {
+                lineNumbers.push(index);
+            }
+        });
+        console.log(lineNumbers);
+        return lineNumbers;
+    }
 }
 exports["default"] = CodeParser;
 
@@ -399,7 +439,7 @@ class PrintStatementGenerator {
     constructor(apiKey, fileType) {
         this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
-        this.outputParser = new OutputParser_1.OutputParser();
+        this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
     async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
@@ -9791,6 +9831,9 @@ exports.Moderations = Moderations;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
+    constructor(fileType) {
+        this.fileType = fileType;
+    }
     parse(code, response, lines) {
         var _a;
         const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
@@ -9806,7 +9849,20 @@ class OutputParser {
         });
         const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
         const updatedCode = code + '\n' + indentedResponse;
-        return updatedCode;
+        let comment = "";
+        switch (this.fileType) {
+            case 'Python':
+                comment = " #";
+                break;
+            case 'JavaScript':
+            case 'TypeScript':
+            case 'Java':
+                comment = " //";
+                break;
+        }
+        const easyPrintTag = "Added by EasyPrint";
+        const finalTag = comment + " " + easyPrintTag;
+        return updatedCode + finalTag;
     }
 }
 exports.OutputParser = OutputParser;
