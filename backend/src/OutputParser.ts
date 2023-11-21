@@ -77,17 +77,20 @@ export class OutputParser {
     if (this.isInsideCodeBlock) {
         let indentedToken = token;
 
+        const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
+
         if (token == '\n') {
             // Find the indentation of the last non-empty line
-            const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
             // Add indentation to the token
             indentedToken = '\n' + lastLineIndentation;
         }
 
         // If this is the first piece of code in the current block, prepend a newline to it
         if (!this.hasAddedCodeInCurrentBlock) {
-            indentedToken = '\n' + indentedToken;
-            this.hasAddedCodeInCurrentBlock = true;
+          console.log("Adding inside current code block!!")
+          indentedToken = '\n' + lastLineIndentation + indentedToken;
+          console.log(`Indented token: ${indentedToken}`)
+          this.hasAddedCodeInCurrentBlock = true;
         }
 
         // Append the indented token to the code

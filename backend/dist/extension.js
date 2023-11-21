@@ -68,25 +68,25 @@ function activate(context) {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const selected = editor.selection;
-            const text = editor.document.getText(selected);
+            let startLine = selected.start.line;
+            let endLine = selected.end.line;
+            let fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
+            let text = editor.document.getText(fullLineRange);
             const editor_document = editor.document;
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            let startLine = selected.start;
-            let endLine = selected.end;
-            let range = new vscode.Range(startLine, endLine);
             try {
                 for (var _d = true, _e = __asyncValues(backend.onHighlight(text)), _f; _f = await _e.next(), _a = _f.done, !_a; _d = true) {
                     _c = _f.value;
                     _d = false;
                     const response = _c;
                     const edit = new vscode.WorkspaceEdit();
-                    edit.replace(editor.document.uri, range, response);
+                    edit.replace(editor.document.uri, fullLineRange, response);
                     await vscode.workspace.applyEdit(edit);
                     const responseLines = (response.match(/\n/g) || []).length;
-                    if (startLine.line + responseLines < editor.document.lineCount) {
-                        endLine = editor.document.lineAt(startLine.line + responseLines).range.end;
+                    if (startLine + responseLines < editor.document.lineCount) {
+                        endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
                     }
-                    range = new vscode.Range(startLine, endLine);
+                    fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
                     vscode.window.showInformationMessage(response);
                 }
             }
@@ -10022,12 +10022,14 @@ class OutputParser {
         }
         if (this.isInsideCodeBlock) {
             let indentedToken = token;
+            const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
             if (token == '\n') {
-                const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
                 indentedToken = '\n' + lastLineIndentation;
             }
             if (!this.hasAddedCodeInCurrentBlock) {
-                indentedToken = '\n' + indentedToken;
+                console.log("Adding inside current code block!!");
+                indentedToken = '\n' + lastLineIndentation + indentedToken;
+                console.log(`Indented token: ${indentedToken}`);
                 this.hasAddedCodeInCurrentBlock = true;
             }
             const updatedCode = code + indentedToken;

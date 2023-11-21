@@ -40,33 +40,43 @@ export function activate(context: vscode.ExtensionContext) {
     
         if (editor) {
             const selected = editor.selection;
-            // get text and store it in a variable
-            const text = editor.document.getText(selected);
+            // get line numbers of start and end of the selection
+            let startLine = selected.start.line;
+            let endLine = selected.end.line;
+        
+            // Create a new range that includes the entire lines
+            let fullLineRange = new vscode.Range(
+                startLine, 0,
+                endLine, editor.document.lineAt(endLine).range.end.character
+            );
+        
+            // Get the text of the entire lines
+            let text = editor.document.getText(fullLineRange);
             // get the document that is open in the editor
             const editor_document = editor.document;
-    
+        
             // send the text to the backend controller
             let backend = new BackendController(editor_document.fileName, APIKEY)
-            let startLine = selected.start;
-            let endLine = selected.end;
-
-            let range = new vscode.Range(startLine, endLine);
-            
+        
             for await (const response of backend.onHighlight(text)) {
                 const edit = new vscode.WorkspaceEdit();
-
-                // Replace the range with the response
-                edit.replace(editor.document.uri, range, response)
+        
+                // Replace the full lines with the response
+                edit.replace(editor.document.uri, fullLineRange, response)
                 await vscode.workspace.applyEdit(edit)
-
+        
                 const responseLines = (response.match(/\n/g) || []).length;
-                if (startLine.line + responseLines < editor.document.lineCount) {
-                    endLine = editor.document.lineAt(startLine.line + responseLines).range.end;
+                if (startLine + responseLines < editor.document.lineCount) {
+                    // Update endLine to the end of the last line of the response
+                    endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
                 }
-
+        
                 // Update the range
-                range = new vscode.Range(startLine, endLine);
-
+                fullLineRange = new vscode.Range(
+                    startLine, 0,
+                    endLine, editor.document.lineAt(endLine).range.end.character
+                );
+        
                 vscode.window.showInformationMessage(response)
             };
         
