@@ -44,7 +44,7 @@
       {
         "command": "easyprint.keybindingDelete",
         "key": "ctrl+alt+d",
-        "mac": "ctrl+shift+d"
+        "mac": "cmd+shift+d"
       }
     ]
   },
