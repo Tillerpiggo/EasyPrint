@@ -13,8 +13,7 @@
 
 ## Plans
 - Develop features to remove print statements
-- ADD MORE 
-
+- Add more functionality to test and provide keybinding for delete
 
 # Personal Reports
 
