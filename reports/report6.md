@@ -51,3 +51,20 @@
 - Help establish the "groupings" so to allow for variable-tracking, loop tracking, and conditionals
 - Make sure the documentation is up-to-date and useful
 - Perhaps check on the testing infrastructure again
+
+## Tyler Gee
+
+### Goals
+- Architect system for tracking, deleting, caching, and queuing print statements
+- Create refined prompts for different use cases
+- Integrate API controller with stream to provide ChatGPT-like token-by-token interface
+
+### Progress
+- Integrated API controller with stream to provide ChatGPT-like token-by-token generation
+- Modified UI/interfaces throughout code to propogate each token up to the UI
+- Fixed related indentation and editing bugs
+
+### Plans
+- Sync with Akash/Tyler R. on print statement deletion
+- Create refined prompts for different use cases
+- Merge token-by-token generation into main, and make it act as a single "edit" rather than a million edits.
