@@ -31,3 +31,23 @@
 - Expand upon the delete function to work with different keybind for deleting only from a block of code
 - Develop data structure if needed to store statements that may be used for other fronend functionlity
 - Have a Happy Thanksgiving!
+
+## Akash Prasad
+
+### Goals
+- Figure out how to remove print statements:
+    - add "\\ Added by EasyPrint" to identify print statements
+    - naively go through the file and remove those lines
+- Maybe help with token-by-token printing
+- Perhaps adjust testing infrastructure with Tyler R
+
+### Progress
+- Naive deletion is completed:
+    - adds a comment (based on language) to "tag" EasyPrint lines
+    - deletes all lines with that comment present in the file
+- Adjusted UserManual and README to be more concise and more helpful (hopefully!)
+
+### Plans
+- Help establish the "groupings" so to allow for variable-tracking, loop tracking, and conditionals
+- Make sure the documentation is up-to-date and useful
+- Perhaps check on the testing infrastructure again
