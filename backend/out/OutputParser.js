@@ -2,12 +2,38 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OutputParser = void 0;
 class OutputParser {
+    constructor(fileType) {
+        this.fileType = fileType;
+    }
     parse(code, response, lines) {
         var _a;
         const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
         const trimmedResponse = response.trimStart();
-        const updatedCode = code + '\n' + lastLineIndentation + trimmedResponse;
-        return updatedCode;
+        let responseLines = trimmedResponse.split('\n');
+        let inCodeBlock = false;
+        responseLines = responseLines.filter(line => {
+            if (line.startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                return false;
+            }
+            return inCodeBlock;
+        });
+        const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
+        const updatedCode = code + '\n' + indentedResponse;
+        let comment = "";
+        switch (this.fileType) {
+            case 'Python':
+                comment = " #";
+                break;
+            case 'JavaScript':
+            case 'TypeScript':
+            case 'Java':
+                comment = " //";
+                break;
+        }
+        const easyPrintTag = "Added by EasyPrint";
+        const finalTag = comment + " " + easyPrintTag;
+        return updatedCode + finalTag;
     }
 }
 exports.OutputParser = OutputParser;
