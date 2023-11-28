@@ -144,25 +144,47 @@ function activate(context) {
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const selected = editor.selection;
+            const text = editor.document.getText(selected);
             const editor_document = editor.document;
-            editor.edit(editBuilder => {
-                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-                let lineNumbers = backend.deleteComments();
-                lineNumbers.sort((a, b) => b - a);
-                lineNumbers.forEach(lineNumber => {
-                    if (lineNumber < editor.document.lineCount) {
-                        const line = editor.document.lineAt(lineNumber);
-                        editBuilder.delete(line.rangeIncludingLineBreak);
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            console.log(startLine);
+            console.log(endLine);
+            if (startLine.isBefore(endLine)) {
+                const range = new vscode.Range(startLine, endLine);
+                const edit = new vscode.WorkspaceEdit();
+                1;
+                for (let line = startLine.line; line <= endLine.line; line++) {
+                    const lineText = editor_document.lineAt(line).text;
+                    if (lineText.includes('Added by EasyPrint')) {
+                        const lineRange = new vscode.Range(line, 0, line, lineText.length);
+                        edit.delete(editor_document.uri, lineRange);
+                    }
+                }
+                vscode.workspace.applyEdit(edit);
+            }
+            else {
+                editor.edit(editBuilder => {
+                    let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                    let lineNumbers = backend.deleteComments();
+                    lineNumbers.sort((a, b) => b - a);
+                    lineNumbers.forEach(lineNumber => {
+                        if (lineNumber < editor.document.lineCount) {
+                            const line = editor.document.lineAt(lineNumber);
+                            editBuilder.delete(line.rangeIncludingLineBreak);
+                        }
+                    });
+                }).then(success => {
+                    if (success) {
+                        vscode.window.showInformationMessage('Lines deleted successfully.');
+                    }
+                    else {
+                        vscode.window.showErrorMessage('Failed to delete lines.');
                     }
                 });
-            }).then(success => {
-                if (success) {
-                    vscode.window.showInformationMessage('Lines deleted successfully.');
-                }
-                else {
-                    vscode.window.showErrorMessage('Failed to delete lines.');
-                }
-            });
+            }
         }
     });
     context.subscriptions.push(keybindingHover);

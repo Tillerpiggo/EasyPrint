@@ -155,13 +155,38 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
 
         if (editor) {
-
+            const selected = editor.selection;
+            // get text and store it in a variable
+            const text = editor.document.getText(selected);
+            // get the document that is open in the editor
             const editor_document = editor.document;
 
+            // send the text to the backend controller
+            let backend = new BackendController(editor_document.fileName, APIKEY)
+            const startLine = selected.start;
+            const endLine = selected.end;
+            console.log(startLine)
+            console.log(endLine)
+            if (startLine.isBefore(endLine)){
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();1
+            for (let line = startLine.line; line <= endLine.line; line++) {
+                const lineText = editor_document.lineAt(line).text;
+                // Check if the line contains the specified comment
+                if (lineText.includes('Added by EasyPrint')) {
+                    // Create a range for the entire line
+                    const lineRange = new vscode.Range(line, 0, line, lineText.length);
+                    // Delete the line
+                    edit.delete(editor_document.uri, lineRange);
+                }
+            }
+            vscode.workspace.applyEdit(edit);
+            }else{
             editor.edit(editBuilder => {
             // Sort line numbers in descending order to avoid issues with changing line indices
             let backend = new BackendController(editor_document.fileName, APIKEY);
             let lineNumbers = backend.deleteComments();
+            
 
             lineNumbers.sort((a, b) => b - a);
 
@@ -178,6 +203,7 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage('Failed to delete lines.');
                 }
             });
+        }
     }});
 
     context.subscriptions.push(keybindingHover);
