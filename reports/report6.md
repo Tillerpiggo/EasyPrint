@@ -68,3 +68,20 @@
 - Sync with Akash/Tyler R. on print statement deletion
 - Create refined prompts for different use cases
 - Merge token-by-token generation into main, and make it act as a single "edit" rather than a million edits.
+
+## Aishah Vakil
+
+### Goals
+- Finish implementing loading feature and word by word feature
+- Set up integration with backend
+- Ensure commenting feature works for all languages
+
+### Progress
+- Began researching/implementing loading and word by word
+- Fixed commenting feature to work properly (in commenting syntax)
+- Worked on hovering
+
+### Plans
+- Sync with group on UI stuff, ensure we have backend functionality for that 
+- Try hovering again (didn't work the first time)
+

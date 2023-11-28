@@ -10,6 +10,31 @@ let decorationType = vscode.window.createTextEditorDecorationType({
 });
 let highlightMode = false;
 
+// HTML for the spinning/loading symbol
+const loadingSymbol = `
+    <html>
+    <head>
+        <style>
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top: 4px solid #3498db;
+                width: 20px;
+                height: 20px;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="spinner"></div>
+    </body>
+    </html>
+`;
+
 function highlightScope() {
     activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
@@ -52,12 +77,29 @@ export function activate(context: vscode.ExtensionContext) {
 
             const range = new vscode.Range(startLine, endLine);
             const edit = new vscode.WorkspaceEdit();
+
             backend.onHighlight(text).then(response => {
                 edit.replace(editor.document.uri, range, response)
                 vscode.workspace.applyEdit(edit)
                 vscode.window.showInformationMessage(response)
             });
             console.log("dummy dummy");
+
+            // const statement = text.split(/\s+/);
+            // let i = 0;
+
+            // function printTokenByToken() {
+            //     if (i < statement.length) {
+            //         edit.replace(editor.document.uri, range, statement[i]);
+            //         i++;
+            //         setTimeout(printTokenByToken, 500);
+            //     } else {
+            //         vscode.workspace.applyEdit(edit);
+            //         vscode.window.showInformationMessage('printed word by word');
+            //     }
+            // }
+            // printTokenByToken();
+
         }
     });
 
@@ -68,6 +110,7 @@ export function activate(context: vscode.ExtensionContext) {
             console.log("Not entered!!!")
         }
     }, null, context.subscriptions);
+
     let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', () => {
         highlightMode = !highlightMode;
         highlightScope();
