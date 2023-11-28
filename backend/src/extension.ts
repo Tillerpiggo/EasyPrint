@@ -59,9 +59,10 @@ export function activate(context: vscode.ExtensionContext) {
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "easyprint" is now active!');
 
-
+    let changeable = false
 	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
+        
 
         if (editor) {
             const selected = editor.selection;
@@ -74,15 +75,22 @@ export function activate(context: vscode.ExtensionContext) {
             let backend = new BackendController(editor_document.fileName, APIKEY)
             const startLine = selected.start;
             const endLine = selected.end;
-
+            console.log(startLine)
+            console.log(endLine)
+            if (startLine.isBefore(endLine)){
+                changeable = true
+            }else{
+                changeable = false
+            }
             const range = new vscode.Range(startLine, endLine);
             const edit = new vscode.WorkspaceEdit();
-
+            if(changeable){
             backend.onHighlight(text).then(response => {
                 edit.replace(editor.document.uri, range, response)
                 vscode.workspace.applyEdit(edit)
                 vscode.window.showInformationMessage(response)
             });
+        }
             console.log("dummy dummy");
 
             // const statement = text.split(/\s+/);
@@ -107,6 +115,7 @@ export function activate(context: vscode.ExtensionContext) {
         if (highlightMode) {
             highlightScope();
         } else {
+            changeable = false
             console.log("Not entered!!!")
         }
     }, null, context.subscriptions);

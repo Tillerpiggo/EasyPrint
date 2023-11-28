@@ -38,6 +38,29 @@ let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
 let highlightMode = false;
+const loadingSymbol = `
+    <html>
+    <head>
+        <style>
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top: 4px solid #3498db;
+                width: 20px;
+                height: 20px;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="spinner"></div>
+    </body>
+    </html>
+`;
 function highlightScope() {
     activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
@@ -56,6 +79,7 @@ function highlightScope() {
 }
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
+    let changeable = false;
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
@@ -65,13 +89,23 @@ function activate(context) {
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const startLine = selected.start;
             const endLine = selected.end;
+            console.log(startLine);
+            console.log(endLine);
+            if (startLine.isBefore(endLine)) {
+                changeable = true;
+            }
+            else {
+                changeable = false;
+            }
             const range = new vscode.Range(startLine, endLine);
             const edit = new vscode.WorkspaceEdit();
-            backend.onHighlight(text).then(response => {
-                edit.replace(editor.document.uri, range, response);
-                vscode.workspace.applyEdit(edit);
-                vscode.window.showInformationMessage(response);
-            });
+            if (changeable) {
+                backend.onHighlight(text).then(response => {
+                    edit.replace(editor.document.uri, range, response);
+                    vscode.workspace.applyEdit(edit);
+                    vscode.window.showInformationMessage(response);
+                });
+            }
             console.log("dummy dummy");
         }
     });
@@ -80,6 +114,7 @@ function activate(context) {
             highlightScope();
         }
         else {
+            changeable = false;
             console.log("Not entered!!!");
         }
     }, null, context.subscriptions);

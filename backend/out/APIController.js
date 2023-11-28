@@ -10,13 +10,19 @@ class APIController {
         this.openai = new openai_1.default({ apiKey });
     }
     async generateResponse(prompt, maxTokens = 100) {
-        const response = await this.openai.completions.create({
-            model: 'text-davinci-002',
-            prompt: prompt,
-            max_tokens: maxTokens,
-            temperature: 0.0
+        const response = await this.openai.chat.completions.create({
+            model: 'gpt-3.5-turbo-1106',
+            messages: [
+                { "role": "system", "content": "You are EasyPrint, the world's best printing plugin." },
+                { "role": "user", "content": prompt },
+            ]
         });
-        return response.choices[0].text.trim();
+        if (response && response.choices && response.choices.length > 0 && response.choices[0].message && response.choices[0].message.content) {
+            return response.choices[0].message.content.trim();
+        }
+        else {
+            return "FAIL";
+        }
     }
 }
 exports.APIController = APIController;

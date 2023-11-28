@@ -26,7 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const BackendController_1 = require("./BackendController");
-const APIKEY = "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";
+const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
@@ -70,7 +70,6 @@ function activate(context) {
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {
-        console.log("highlight mode: ", highlightMode);
         if (highlightMode) {
             highlightScope();
         }
@@ -82,8 +81,53 @@ function activate(context) {
         highlightMode = !highlightMode;
         highlightScope();
     });
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const selected = editor.selection;
+            const text = editor.document.getText(selected);
+            const editor_document = editor.document;
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+            const startLine = selected.start;
+            const endLine = selected.end;
+            const range = new vscode.Range(startLine, endLine);
+            const edit = new vscode.WorkspaceEdit();
+            backend.onHighlightComment(text).then(response => {
+                edit.replace(editor.document.uri, range, response);
+                vscode.workspace.applyEdit(edit);
+                vscode.window.showInformationMessage(response);
+            });
+            console.log("reached");
+        }
+    });
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const editor_document = editor.document;
+            editor.edit(editBuilder => {
+                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                let lineNumbers = backend.deleteComments();
+                lineNumbers.sort((a, b) => b - a);
+                lineNumbers.forEach(lineNumber => {
+                    if (lineNumber < editor.document.lineCount) {
+                        const line = editor.document.lineAt(lineNumber);
+                        editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                }
+                else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
+            });
+        }
+    });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
+    context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 exports.activate = activate;
 function deactivate() { }

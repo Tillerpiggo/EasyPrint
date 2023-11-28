@@ -8,9 +8,15 @@ class PrintStatementGenerator {
     constructor(apiKey, fileType) {
         this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
-        this.outputParser = new OutputParser_1.OutputParser();
+        this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
     async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
+        const prompt = this.promptGenerator.generate(promptType, code);
+        const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        return `${parsedResponse}`;
+    }
+    async insertComments(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
         const parsedResponse = this.outputParser.parse(code, apiResponse, lines);

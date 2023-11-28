@@ -35,6 +35,7 @@ class BackendController {
     constructor(filePath, apiKey) {
         this.codeParser = new CodeParser_1.default(filePath);
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
+        this.commentGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
     async onHighlight(code) {
         const promptType = PromptType_1.PromptType.SingleLine;
@@ -56,6 +57,16 @@ class BackendController {
             ranges.push(new vscode.Range(start, end));
         }
         return ranges;
+    }
+    async onHighlightComment(code) {
+        const promptType = PromptType_1.PromptType.Comment;
+        const endingLine = code.split('\n');
+        const insertionLines = [endingLine.length];
+        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
+        return codeWithComment;
+    }
+    deleteComments() {
+        return this.codeParser.findEasyPrintLines();
     }
 }
 exports.BackendController = BackendController;
