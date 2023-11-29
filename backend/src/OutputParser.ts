@@ -31,24 +31,24 @@ export class OutputParser {
         // Append the indented response to the code
         const updatedCode = code + '\n' + indentedResponse;
 
-        // Append the "added by EasyPrint" comment to the end of the line in the correct language
-        let comment: String = "";
-        switch (this.fileType){
-            case 'Python':
-                comment = " #";
-                break;
-            case 'JavaScript': 
-            case 'TypeScript': 
-            case 'Java':
-                comment = " //";
-                break;
-        }
+        // // Append the "added by EasyPrint" comment to the end of the line in the correct language
+        // let comment: String = "";
+        // switch (this.fileType){
+        //     case 'Python':
+        //         comment = " #";
+        //         break;
+        //     case 'JavaScript': 
+        //     case 'TypeScript': 
+        //     case 'Java':
+        //         comment = " //";
+        //         break;
+        // }
 
-        const easyPrintTag = "Added by EasyPrint";
+        // const easyPrintTag = "Added by EasyPrint";
 
-        const finalTag = comment + " " + easyPrintTag;
+        // const finalTag = comment + " " + easyPrintTag;
 
-        return updatedCode + finalTag;
+        return updatedCode; //+ finalTag;
     }
 
     parse_comments(apiResponse:string, lines:number[]):string {
