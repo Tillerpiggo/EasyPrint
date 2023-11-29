@@ -126,28 +126,36 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
 
-	let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
 		const editor = vscode.window.activeTextEditor;
 
 		if (editor) {
-
             const selected = editor.selection;
-            const text = editor.document.getText(selected);
             const editor_document = editor.document;
-
+        
             // Send request to backend with request for comment
             let backend = new BackendController(editor_document.fileName, APIKEY)
-            const startLine = selected.start;
-            const endLine = selected.end;
-
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            backend.onHighlightComment(text).then(response => {
-                edit.replace(editor.document.uri, range, response)
-                vscode.workspace.applyEdit(edit)
-                vscode.window.showInformationMessage(response)
+            
+            const start = selected.start;
+            const end = selected.end;
+            // Get the range of the selected text
+            if (start.isBefore(end)){
+            const range = new vscode.Range(start, end);
+        
+            backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+                //console.log(response);
+        
+                // Create a new edit to replace the selected text
+                const edit = new vscode.WorkspaceEdit();
+                edit.replace(editor.document.uri, range, response);
+        
+                // Apply the edit
+                vscode.workspace.applyEdit(edit);
+        
+                // Optionally, display a message
+                vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
             });
-            console.log("reached");
+          }
         }
 	});
 
@@ -159,27 +167,6 @@ export function activate(context: vscode.ExtensionContext) {
             const selected = editor.selection;
             const editor_document = editor.document;
 
-            // send the text to the backend controller
-            let backend = new BackendController(editor_document.fileName, APIKEY)
-            const startLine = selected.start;
-            const endLine = selected.end;
-            console.log(startLine)
-            console.log(endLine)
-            if (startLine.isBefore(endLine)){
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();1
-            for (let line = startLine.line; line <= endLine.line; line++) {
-                const lineText = editor_document.lineAt(line).text;
-                // Check if the line contains the specified comment
-                if (lineText.includes('Added by EasyPrint')) {
-                    // Create a range for the entire line
-                    const lineRange = new vscode.Range(line, 0, line, lineText.length);
-                    // Delete the line
-                    edit.delete(editor_document.uri, lineRange);
-                }
-            }
-            vscode.workspace.applyEdit(edit);
-            }else{
             editor.edit(editBuilder => {
             // Sort line numbers in descending order to avoid issues with changing line indices
             let backend = new BackendController(editor_document.fileName, APIKEY);
@@ -206,7 +193,6 @@ export function activate(context: vscode.ExtensionContext) {
                     vscode.window.showErrorMessage('Failed to delete lines.');
                 }
             });
-        }
     }});
 
     context.subscriptions.push(keybindingHover);

@@ -19,7 +19,7 @@ class PrintStatementGenerator {
     async insertComments(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
         return `${parsedResponse}`;
     }
 }
