@@ -126,19 +126,19 @@ function activate(context) {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const selected = editor.selection;
-            const text = editor.document.getText(selected);
             const editor_document = editor.document;
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            const startLine = selected.start;
-            const endLine = selected.end;
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            backend.onHighlightComment(text).then(response => {
-                edit.replace(editor.document.uri, range, response);
-                vscode.workspace.applyEdit(edit);
-                vscode.window.showInformationMessage(response);
-            });
-            console.log("reached");
+            const start = selected.start;
+            const end = selected.end;
+            if (start.isBefore(end)) {
+                const range = new vscode.Range(start, end);
+                backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+                    const edit = new vscode.WorkspaceEdit();
+                    edit.replace(editor.document.uri, range, response);
+                    vscode.workspace.applyEdit(edit);
+                    vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
+                });
+            }
         }
     });
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
@@ -494,7 +494,7 @@ class PrintStatementGenerator {
     async insertComments(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
         return `${parsedResponse}`;
     }
 }
@@ -530,7 +530,8 @@ class PromptGenerator {
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
             case PromptType_1.PromptType.Comment:
-                prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details. Ensure that the comment is in suitable comment format rather than just text.`;
+                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment format rather than just text and add meaningful comments throughout the code if multiple lines or a single comment if only one line. If code 
+        is already thoroughly commented just return the same code and comments that were passed`;
                 break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
@@ -538,7 +539,12 @@ class PromptGenerator {
             default:
                 return 'Invalid prompt type.';
         }
-        return prompt + this.customInstructions;
+        if (promptType !== PromptType_1.PromptType.Comment) {
+            return prompt + this.customInstructions;
+        }
+        else {
+            return prompt;
+        }
     }
 }
 exports.PromptGenerator = PromptGenerator;
@@ -9907,6 +9913,18 @@ class OutputParser {
         const easyPrintTag = "Added by EasyPrint";
         const finalTag = comment + " " + easyPrintTag;
         return updatedCode + finalTag;
+    }
+    parse_comments(apiResponse, lines) {
+        let responseLines = apiResponse.split('\n');
+        let inCodeBlock = false;
+        let extractedCode = responseLines.filter(line => {
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                return false;
+            }
+            return inCodeBlock;
+        });
+        return extractedCode.join('\n');
     }
 }
 exports.OutputParser = OutputParser;

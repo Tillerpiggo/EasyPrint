@@ -50,4 +50,21 @@ export class OutputParser {
 
         return updatedCode + finalTag;
     }
+
+    parse_comments(apiResponse:string, lines:number[]):string {
+        // Split the response into lines
+        let responseLines = apiResponse.split('\n');
+  
+        // Filter in lines within code blocks, excluding the code block delimiters
+        let inCodeBlock = false;
+        let extractedCode = responseLines.filter(line => {
+          if (line.trim().startsWith('```')) {
+            inCodeBlock = !inCodeBlock;
+            return false; // Skip the code block delimiters
+          }
+          return inCodeBlock;
+        });
+      // Join the extracted code lines back into a single string
+      return extractedCode.join('\n');
+      }
 }

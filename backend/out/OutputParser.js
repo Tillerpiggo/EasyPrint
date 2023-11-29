@@ -35,6 +35,18 @@ class OutputParser {
         const finalTag = comment + " " + easyPrintTag;
         return updatedCode + finalTag;
     }
+    parse_comments(apiResponse, lines) {
+        let responseLines = apiResponse.split('\n');
+        let inCodeBlock = false;
+        let extractedCode = responseLines.filter(line => {
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                return false;
+            }
+            return inCodeBlock;
+        });
+        return extractedCode.join('\n');
+    }
 }
 exports.OutputParser = OutputParser;
 //# sourceMappingURL=OutputParser.js.map

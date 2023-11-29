@@ -22,7 +22,8 @@ class PromptGenerator {
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
             case PromptType_1.PromptType.Comment:
-                prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details. Ensure that the comment is in suitable comment format rather than just text.`;
+                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment format rather than just text and add meaningful comments throughout the code if multiple lines or a single comment if only one line. If code 
+        is already thoroughly commented just return the same code and comments that were passed`;
                 break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
@@ -30,7 +31,12 @@ class PromptGenerator {
             default:
                 return 'Invalid prompt type.';
         }
-        return prompt + this.customInstructions;
+        if (promptType !== PromptType_1.PromptType.Comment) {
+            return prompt + this.customInstructions;
+        }
+        else {
+            return prompt;
+        }
     }
 }
 exports.PromptGenerator = PromptGenerator;
