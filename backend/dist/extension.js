@@ -144,10 +144,19 @@ function activate(context) {
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const selected = editor.selection;
             const editor_document = editor.document;
             editor.edit(editBuilder => {
                 let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
                 let lineNumbers = backend.deleteComments();
+                const start = selected.start.line;
+                const end = selected.end.line;
+                if (start === end) {
+                    lineNumbers = lineNumbers;
+                }
+                else {
+                    lineNumbers = lineNumbers.filter(lineNumber => lineNumber >= start && lineNumber <= end);
+                }
                 lineNumbers.sort((a, b) => b - a);
                 lineNumbers.forEach(lineNumber => {
                     if (lineNumber < editor.document.lineCount) {

@@ -156,13 +156,20 @@ export function activate(context: vscode.ExtensionContext) {
 
         if (editor) {
 
+            const selected = editor.selection;
             const editor_document = editor.document;
 
             editor.edit(editBuilder => {
             // Sort line numbers in descending order to avoid issues with changing line indices
             let backend = new BackendController(editor_document.fileName, APIKEY);
             let lineNumbers = backend.deleteComments();
-
+            const start = selected.start.line
+            const end = selected.end.line
+            if (start === end){
+                lineNumbers = lineNumbers
+            }else{
+                lineNumbers = lineNumbers.filter(lineNumber => lineNumber >= start && lineNumber <= end);
+            }
             lineNumbers.sort((a, b) => b - a);
 
             lineNumbers.forEach(lineNumber => {
