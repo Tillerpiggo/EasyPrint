@@ -26,4 +26,4 @@
     - This is a new window of vscode that has the extension working
  - Highlight any piece of code and click cmd+shift+h (mac) or ctrl+alt+h (windows) to generate debugging print statements!
  - To delete the added statements click cmd+shift+d (mac) or ctrl+alt+d (windows) and the added statements will be deleted!
- - Need help commenting?  Highklight some code and click cmd+shift+e (mac) or ctrl+alt+e (windows) and meaningful comments will appear in your code!
+ - Need help commenting?  Highlight some code and click cmd+shift+e (mac) or ctrl+alt+e (windows) and meaningful comments will appear in your code!
