@@ -20,20 +20,7 @@ class OutputParser {
         });
         const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
         const updatedCode = code + '\n' + indentedResponse;
-        let comment = "";
-        switch (this.fileType) {
-            case 'Python':
-                comment = " #";
-                break;
-            case 'JavaScript':
-            case 'TypeScript':
-            case 'Java':
-                comment = " //";
-                break;
-        }
-        const easyPrintTag = "Added by EasyPrint";
-        const finalTag = comment + " " + easyPrintTag;
-        return updatedCode + finalTag;
+        return updatedCode;
     }
     parse_comments(apiResponse, lines) {
         let responseLines = apiResponse.split('\n');
