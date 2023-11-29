@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { BackendController } from './BackendController';
-
+import { InputParser } from './InputParser'
 const APIKEY= "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";
 let activeEditor: any;
 let decorationType = vscode.window.createTextEditorDecorationType({
@@ -65,18 +65,19 @@ export function activate(context: vscode.ExtensionContext) {
         
 
         if (editor) {
+            const inputParser = new InputParser()
+            
             const selected = editor.selection;
             // get text and store it in a variable
             const text = editor.document.getText(selected);
             // get the document that is open in the editor
             const editor_document = editor.document;
-
+            const promptType = inputParser.determinePromptType(text)
             // send the text to the backend controller
             let backend = new BackendController(editor_document.fileName, APIKEY)
             const startLine = selected.start;
             const endLine = selected.end;
-            console.log(startLine)
-            console.log(endLine)
+            
             if (startLine.isBefore(endLine)){
                 changeable = true
             }else{
@@ -91,8 +92,6 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.window.showInformationMessage(response)
             });
         }
-            console.log("dummy dummy");
-
             // const statement = text.split(/\s+/);
             // let i = 0;
 

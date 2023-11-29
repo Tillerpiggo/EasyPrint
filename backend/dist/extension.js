@@ -32,6 +32,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const BackendController_1 = __webpack_require__(2);
+const InputParser_1 = __webpack_require__(94);
 const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
@@ -83,14 +84,14 @@ function activate(context) {
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const inputParser = new InputParser_1.InputParser();
             const selected = editor.selection;
             const text = editor.document.getText(selected);
             const editor_document = editor.document;
+            const promptType = inputParser.determinePromptType(text);
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const startLine = selected.start;
             const endLine = selected.end;
-            console.log(startLine);
-            console.log(endLine);
             if (startLine.isBefore(endLine)) {
                 changeable = true;
             }
@@ -106,7 +107,6 @@ function activate(context) {
                     vscode.window.showInformationMessage(response);
                 });
             }
-            console.log("dummy dummy");
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {
@@ -227,8 +227,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BackendController = void 0;
 const CodeParser_1 = __importDefault(__webpack_require__(3));
 const PrintStatementGenerator_1 = __webpack_require__(8);
-const PromptType_1 = __webpack_require__(10);
+const PromptType_1 = __webpack_require__(9);
 const vscode = __importStar(__webpack_require__(1));
+const InputParser_1 = __webpack_require__(94);
 class BackendController {
     constructor(filePath, apiKey) {
         this.codeParser = new CodeParser_1.default(filePath);
@@ -236,7 +237,9 @@ class BackendController {
         this.commentGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.SingleLine;
+        let inputParser = new InputParser_1.InputParser();
+        const promptType = inputParser.determinePromptType(code);
+        console.log(promptType);
         const linesOfCode = code.split('\n');
         const insertionLines = [linesOfCode.length];
         const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
@@ -476,7 +479,8 @@ var Module=void 0!==Module?Module:{},TreeSitter=function(){var initPromise,docum
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PrintStatementGenerator = void 0;
-const PromptGenerator_1 = __webpack_require__(9);
+const PromptType_1 = __webpack_require__(9);
+const PromptGenerator_1 = __webpack_require__(10);
 const APIController_1 = __webpack_require__(11);
 const OutputParser_1 = __webpack_require__(93);
 class PrintStatementGenerator {
@@ -488,7 +492,13 @@ class PrintStatementGenerator {
     async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        let parsedResponse;
+        if (promptType === PromptType_1.PromptType.SingleLine) {
+            parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        }
+        else {
+            parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+        }
         return `${parsedResponse}`;
     }
     async insertComments(promptType, code, lines, maxTokens = 100) {
@@ -503,55 +513,6 @@ exports.PrintStatementGenerator = PrintStatementGenerator;
 
 /***/ }),
 /* 9 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PromptGenerator = void 0;
-const PromptType_1 = __webpack_require__(10);
-class PromptGenerator {
-    constructor(fileType) {
-        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters.`;
-    }
-    generate(promptType, code) {
-        let prompt = '';
-        switch (promptType) {
-            case PromptType_1.PromptType.SingleLine:
-                prompt = `Add a SINGLE print statement to the following code. In one print statement, print the names and values of all variables involved, and the overall value of the expression. Respond with ONLY CODE and nothing else. The code: ${code}`;
-                break;
-            case PromptType_1.PromptType.Conditional:
-                prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
-                break;
-            case PromptType_1.PromptType.Loop:
-                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively. Respond with the exact code plus your print statement.`;
-                break;
-            case PromptType_1.PromptType.VariableTracking:
-                prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
-                break;
-            case PromptType_1.PromptType.Comment:
-                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment format rather than just text and add meaningful comments throughout the code if multiple lines or a single comment if only one line. If code 
-        is already thoroughly commented just return the same code and comments that were passed`;
-                break;
-            case PromptType_1.PromptType.Combinational:
-                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
-                break;
-            default:
-                return 'Invalid prompt type.';
-        }
-        if (promptType !== PromptType_1.PromptType.Comment) {
-            return prompt + this.customInstructions;
-        }
-        else {
-            return prompt;
-        }
-    }
-}
-exports.PromptGenerator = PromptGenerator;
-
-
-/***/ }),
-/* 10 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -567,6 +528,59 @@ var PromptType;
     PromptType["Comment"] = "Comment";
     PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
+
+
+/***/ }),
+/* 10 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PromptGenerator = void 0;
+const PromptType_1 = __webpack_require__(9);
+class PromptGenerator {
+    constructor(fileType) {
+        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters. and add the comment " Added by EasyPrint" on the same line after each print statement`;
+    }
+    generate(promptType, code) {
+        let prompt = '';
+        switch (promptType) {
+            case PromptType_1.PromptType.SingleLine:
+                prompt = `Add a SINGLE print statement to the following code. In one print statement, print the names and values of only the variables involved, and the overall value of the expression. The code: ${code}`;
+                break;
+            case PromptType_1.PromptType.Conditional:
+                prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition. 
+                  Also, add a print statement to show the ending values after the conditional is complete`;
+                break;
+            case PromptType_1.PromptType.Loop:
+                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively.`;
+                break;
+            case PromptType_1.PromptType.VariableTracking:
+                prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
+                break;
+            case PromptType_1.PromptType.Comment:
+                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment 
+                  format rather than just text and add meaningful comments on the next line throughout the code if multiple lines or a single comment if only one line. If code is already thoroughly 
+                  commented just return the same code and comments that were passed`;
+                break;
+            case PromptType_1.PromptType.Combinational:
+                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". 
+                  These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables 
+                  being checked in the conditional statements. Respond with the exact code plus your print statements.`;
+                break;
+            default:
+                return 'Invalid prompt type.';
+        }
+        if (promptType !== PromptType_1.PromptType.Comment) {
+            return prompt + this.customInstructions;
+        }
+        else {
+            return prompt;
+        }
+    }
+}
+exports.PromptGenerator = PromptGenerator;
 
 
 /***/ }),
@@ -9899,20 +9913,7 @@ class OutputParser {
         });
         const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
         const updatedCode = code + '\n' + indentedResponse;
-        let comment = "";
-        switch (this.fileType) {
-            case 'Python':
-                comment = " #";
-                break;
-            case 'JavaScript':
-            case 'TypeScript':
-            case 'Java':
-                comment = " //";
-                break;
-        }
-        const easyPrintTag = "Added by EasyPrint";
-        const finalTag = comment + " " + easyPrintTag;
-        return updatedCode + finalTag;
+        return updatedCode;
     }
     parse_comments(apiResponse, lines) {
         let responseLines = apiResponse.split('\n');
@@ -9928,6 +9929,34 @@ class OutputParser {
     }
 }
 exports.OutputParser = OutputParser;
+
+
+/***/ }),
+/* 94 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.InputParser = void 0;
+const PromptType_1 = __webpack_require__(9);
+class InputParser {
+    determinePromptType(input) {
+        const conditionalKeywords = ['if', 'else if', 'else', 'switch', 'case'];
+        const loopKeywords = ['for', 'while', 'do'];
+        if (loopKeywords.some(keyword => input.includes(keyword)) && conditionalKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Combinational;
+        }
+        if (loopKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Loop;
+        }
+        if (conditionalKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Conditional;
+        }
+        return PromptType_1.PromptType.SingleLine;
+    }
+}
+exports.InputParser = InputParser;
 
 
 /***/ })

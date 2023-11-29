@@ -26,6 +26,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const BackendController_1 = require("./BackendController");
+const InputParser_1 = require("./InputParser");
 const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
@@ -77,14 +78,14 @@ function activate(context) {
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const inputParser = new InputParser_1.InputParser();
             const selected = editor.selection;
             const text = editor.document.getText(selected);
             const editor_document = editor.document;
+            const promptType = inputParser.determinePromptType(text);
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const startLine = selected.start;
             const endLine = selected.end;
-            console.log(startLine);
-            console.log(endLine);
             if (startLine.isBefore(endLine)) {
                 changeable = true;
             }
@@ -100,7 +101,6 @@ function activate(context) {
                     vscode.window.showInformationMessage(response);
                 });
             }
-            console.log("dummy dummy");
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {

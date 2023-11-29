@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PrintStatementGenerator = void 0;
+const PromptType_1 = require("./PromptType");
 const PromptGenerator_1 = require("./PromptGenerator");
 const APIController_1 = require("./APIController");
 const OutputParser_1 = require("./OutputParser");
@@ -13,7 +14,13 @@ class PrintStatementGenerator {
     async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         const prompt = this.promptGenerator.generate(promptType, code);
         const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        let parsedResponse;
+        if (promptType === PromptType_1.PromptType.SingleLine) {
+            parsedResponse = this.outputParser.parse(code, apiResponse, lines);
+        }
+        else {
+            parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+        }
         return `${parsedResponse}`;
     }
     async insertComments(promptType, code, lines, maxTokens = 100) {
