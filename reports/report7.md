@@ -45,3 +45,19 @@
 ### Plans
 - Fine tune indention on pasting to the canvas
 - Finish backend and write more tests to ensure proper functioanlity of the program
+
+## Aishah Vakil
+
+### Goals
+- Make hovering feature work (still isn't super intuitive)
+- Help out with all other features to finish before final deliverable
+
+### Progress
+- Finished up some more UI stuff:
+-   - Tried to make the spinning wheel work (narrowed it down to a webview instead of a VSCode UI integration)
+-   - Worked on individual words appearing in print statements (still deciding what way to go for this)
+
+### Plans
+- Finally finish the UI features (mainly word by word feature)
+- Try to make hovering work but give up if it's taking too long
+- Ask group members where help is needed on other features
