@@ -10,7 +10,8 @@
 - Used naive code parser for multi line prompts
 
 ## Plans
-
+- Fine tune program for Final presentation
+- write more tests to ensure proper functionality
 
 # Personal Reports
 
@@ -28,4 +29,19 @@
 - Merge token-by-token with main branch
 - Create refined prompts for different use cases
 
+## Tyler Richardson
 
+### Goals
+- Expand upon the delete function to work with different keybind for deleting only from a block of code
+- Develop data structure if needed to store statements that may be used for other frontend functionlity
+- Have a Happy Thanksgiving!
+
+### Progress
+- Developed functionality to delete added print statements from highlighted code only
+- Fine tuned request prompts for AI API
+- Added functionality to comment and add multiple print statements to complicated code
+- Fixed bugs to keep program from generating responses without input
+
+### Plans
+- Fine tune indention on pasting to the canvas
+- Finish backend and write more tests to ensure proper functioanlity of the program
