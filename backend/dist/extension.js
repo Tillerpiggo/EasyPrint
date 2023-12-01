@@ -368,7 +368,7 @@ class CodeParser {
         let node;
         node = this.getNodeAtLine(this.tree.rootNode, targetLine, BlockTypes_1.blockTypesDict);
         const [promptType, blockType, lineUpdates] = BlockTypes_1.blockTypesDict[node.type];
-        const blockNode = this.getBlock(node.parent, targetLine, blockType);
+        const blockNode = this.getNodeAtLine(node.parent, targetLine, blockType);
         console.log("node type: ", node.type);
         console.log("node parent type: ", node.parent.type);
         console.log("block type: ", blockNode.type);
@@ -380,25 +380,11 @@ class CodeParser {
         const endLine = lastNode.endPosition.row;
         return [startLine, endLine];
     }
-    getBlock(node, targetLine, block) {
-        if (!node) {
-            return null;
-        }
-        if (node.startPosition.row >= targetLine && node.type === block) {
-            return node;
-        }
-        for (let i = 0, childCount = node.childCount; i < childCount; i++) {
-            const ret_node = this.getBlock(node.child(i), targetLine, block);
-            if (ret_node) {
-                return ret_node;
-            }
-        }
-    }
     getNodeAtLine(node, targetLine, blockTypes) {
         if (!node || node.startPosition.row > targetLine) {
             return null;
         }
-        if (node.startPosition.row === targetLine && node.type in blockTypes) {
+        if (node.startPosition.row >= targetLine && node.type in blockTypes) {
             return node;
         }
         for (let i = 0, childCount = node.childCount; i < childCount; i++) {
@@ -490,22 +476,22 @@ exports.fileTypeDict = {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.blockTypesDict = void 0;
 exports.blockTypesDict = {
-    "for_statement": ["loop", "block", [1, -1]],
-    "while_statement": ["loop", "block", [1, -1]],
-    "do_statement": ["loop", "block", [1, -1]],
-    "if": ["if-else", "block", [1, -1]],
-    "else": ["if-else", "block", [1, -1]],
-    "class_declaration": ["class", "class_body", [1, -1]],
-    "constructor_declaration": ["function", "constructor_body", [1, -1]],
-    "method_declaration": ["function", "block", [1, -1]],
-    "switch_expression": ["switch_statement", "switch_block", [1, -1]],
-    "switch_block_statement_group": ["switch_case", "switch_block_statement_group", [1, -1]],
-    "expression_statement": ["single line", "expression_statement", [1, 0]],
-    "break_statement": ["single line", "break_statement", [1, 0]],
-    "continue_statement": ["single line", "continue_statement", [1, 0]],
-    "while": ["single line", "while", [0, -1]],
-    "local_variable_declaration": ["single statement", "local_variable_declaration", [1, 0]],
-    "field_declaration": ["single statement", "field_declaration", [1, 0]],
+    "for_statement": ["loop", { "block": null }, [1, -1]],
+    "while_statement": ["loop", { "block": null }, [1, -1]],
+    "do_statement": ["loop", { "block": null }, [1, -1]],
+    "if": ["if-else", { "block": null }, [1, -1]],
+    "else": ["if-else", { "block": null }, [1, -1]],
+    "class_declaration": ["class", { "class_body": null }, [1, -1]],
+    "constructor_declaration": ["function", { "constructor_body": null }, [1, -1]],
+    "method_declaration": ["function", { "block": null }, [1, -1]],
+    "switch_expression": ["switch_statement", { "switch_block": null }, [1, -1]],
+    "switch_block_statement_group": ["switch_case", { "switch_block_statement_group": null }, [1, -1]],
+    "expression_statement": ["single line", { "expression_statement": null }, [1, 0]],
+    "break_statement": ["single line", { "break_statement": null }, [1, 0]],
+    "continue_statement": ["single line", { "continue_statement": null }, [1, 0]],
+    "while": ["single line", { "while": null }, [0, -1]],
+    "local_variable_declaration": ["single statement", { "local_variable_declaration": null }, [1, 0]],
+    "field_declaration": ["single statement", { "field_declaration": null }, [1, 0]],
 };
 
 

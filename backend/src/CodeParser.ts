@@ -17,7 +17,7 @@ export interface FileParser {
     getScopeAtPosition(point: vscode.Position): number[];
     printTree(node: any, depth: number): void,
     getLineRanges(targetLine: number): number[],
-    getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: null} | {[key: string]: (string | {[key: string]: null} | number[])[]}): any,
+    getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: ([string, {[key: string]: null}, number[]] | null)}): any,
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
@@ -97,12 +97,10 @@ class CodeParser implements FileParser {
     // } else {
     //  node = this.getNodeAtLine(this.tree.rootNode, targetLine);
     // }
+    
     node = this.getNodeAtLine(this.tree.rootNode, targetLine, blockTypesDict);
-    const [promptType, blockType, lineUpdates]: [string, string, number[]] = blockTypesDict[node.type];
-    const blockNode = this.getBlock(node.parent, targetLine, blockType);
-    console.log("node type: ", node.type);
-    console.log("node parent type: ", node.parent.type);
-    console.log("block type: ", blockNode.type);
+    const [promptType, blockType, lineUpdates]: [string, {[key: string]: null}, number[]] = blockTypesDict[node.type];
+    const blockNode = this.getNodeAtLine(node.parent, targetLine, blockType);
     if (!node) { 
       return [targetLine, targetLine];
     }
@@ -112,26 +110,11 @@ class CodeParser implements FileParser {
     return [startLine, endLine];
   }
 
-  getBlock(node: any, targetLine: number, block: string): any {
-    if (!node) {
-      return null;
-    }
-    if (node.startPosition.row >= targetLine && node.type === block) {
-      return node;
-    }
-    for (let i = 0, childCount = node.childCount; i < childCount; i++) {
-      const ret_node = this.getBlock(node.child(i), targetLine, block);
-      if (ret_node) {
-        return ret_node;
-      }
-    }
-  }
-
-  getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: null} | {[key: string]: (string | {[key: string]: null} | number[])[]}): any {
+  getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: ([string, {[key: string]: null}, number[]] | null)}): any {
     if (!node || node.startPosition.row > targetLine) {
       return null;
     }
-    if (node.startPosition.row = targetLine && node.type in blockTypes) {
+    if (node.startPosition.row >= targetLine && node.type in blockTypes) {
       return node;
     }
     for (let i = 0, childCount = node.childCount; i < childCount; i++) {

@@ -1,3 +1,5 @@
 export declare const blockTypesDict: {
-    [key: string]: [string, string, number[]];
+    [key: string]: [string, {
+        [key: string]: null;
+    }, number[]];
 };
