@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as vscode from "vscode";
 import * as path from 'path';
 import { fileTypeDict } from "./FileType";
+import { blockTypesDict } from './BlockTypes';
 const Parser = require("web-tree-sitter");
 
 interface Point {
@@ -16,7 +17,7 @@ export interface FileParser {
     getScopeAtPosition(point: vscode.Position): number[];
     printTree(node: any, depth: number): void,
     getLineRanges(targetLine: number): number[],
-    getNodeAtLine(node: any, targetLine: number): any,
+    getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: null} | {[key: string]: (string | {[key: string]: null} | number[])[]}): any,
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
@@ -82,7 +83,7 @@ class CodeParser implements FileParser {
   }
 
   printTree(node: any, depth: number): void {
-    console.log(`${'  '.repeat(depth)}${node.type} : ${node.startPosition.row + 1}`);
+    console.log(`${'        '.repeat(depth)}${node.type} : ${node.startPosition.row + 1}`);
   
     for (const childNode of node.children) {
       this.printTree(childNode, depth + 1);
@@ -91,28 +92,50 @@ class CodeParser implements FileParser {
 
   getLineRanges(targetLine: number): number[] {
     let node: any;
-    if (this.fileType === "Python") {
-      node = this.getNodeAtLine(this.tree.rootNode, targetLine + 1);
-    } else {
-     node = this.getNodeAtLine(this.tree.rootNode, targetLine);
-    }
+    // if (this.fileType === "Python") {
+    //   node = this.getNodeAtLine(this.tree.rootNode, targetLine + 1);
+    // } else {
+    //  node = this.getNodeAtLine(this.tree.rootNode, targetLine);
+    // }
+    node = this.getNodeAtLine(this.tree.rootNode, targetLine, blockTypesDict);
+    const [promptType, blockType, lineUpdates]: [string, string, number[]] = blockTypesDict[node.type];
+    const blockNode = this.getBlock(node.parent, targetLine, blockType);
+    console.log("node type: ", node.type);
+    console.log("node parent type: ", node.parent.type);
+    console.log("block type: ", blockNode.type);
     if (!node) { 
       return [targetLine, targetLine];
     }
-    const lastNode = this.getLastDescendant(node);
-    const end = lastNode.endPosition.row;
-    return [targetLine, end];
+    const lastNode = this.getLastDescendant(blockNode);
+    const startLine = blockNode.startPosition.row;
+    const endLine = lastNode.endPosition.row;
+    return [startLine, endLine];
   }
 
-  getNodeAtLine(node: any, targetLine: number): any {
-    if (!node || node.startPosition.row > targetLine) {
+  getBlock(node: any, targetLine: number, block: string): any {
+    if (!node) {
       return null;
     }
-    if (node.startPosition.row === targetLine && (node.type === this.blockName || node.type === "class_declaration")) {
+    if (node.startPosition.row >= targetLine && node.type === block) {
       return node;
     }
     for (let i = 0, childCount = node.childCount; i < childCount; i++) {
-      const ret_node = this.getNodeAtLine(node.child(i), targetLine);
+      const ret_node = this.getBlock(node.child(i), targetLine, block);
+      if (ret_node) {
+        return ret_node;
+      }
+    }
+  }
+
+  getNodeAtLine(node: any, targetLine: number, blockTypes: {[key: string]: null} | {[key: string]: (string | {[key: string]: null} | number[])[]}): any {
+    if (!node || node.startPosition.row > targetLine) {
+      return null;
+    }
+    if (node.startPosition.row = targetLine && node.type in blockTypes) {
+      return node;
+    }
+    for (let i = 0, childCount = node.childCount; i < childCount; i++) {
+      const ret_node = this.getNodeAtLine(node.child(i), targetLine, blockTypes);
       if (ret_node) {
         return ret_node;
       }

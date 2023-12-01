@@ -38,6 +38,7 @@ const loadingSymbol = `
 function highlightScope() {
     activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
+        activeEditor.setDecorations(decorationType, []);
         const editor_document = activeEditor.document;
         let backend = new BackendController(editor_document.uri.fsPath, APIKEY);
         const position = activeEditor.selection.active;
@@ -123,7 +124,6 @@ export function activate(context: vscode.ExtensionContext) {
         highlightMode = !highlightMode;
         highlightScope();
     });
-
 
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
 		const editor = vscode.window.activeTextEditor;
