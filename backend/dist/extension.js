@@ -35,6 +35,7 @@ const BackendController_1 = __webpack_require__(2);
 const InputParser_1 = __webpack_require__(95);
 const APIKEY = "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";
 let activeEditor;
+let backend;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
@@ -63,20 +64,14 @@ const loadingSymbol = `
     </html>
 `;
 function highlightScope() {
-    activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor) {
+    activeEditor.setDecorations(decorationType, []);
+    const position = activeEditor.selection.active;
+    const ranges = backend.onHover(position);
+    if (highlightMode) {
+        activeEditor.setDecorations(decorationType, ranges);
+    }
+    else {
         activeEditor.setDecorations(decorationType, []);
-        const editor_document = activeEditor.document;
-        let backend = new BackendController_1.BackendController(editor_document.uri.fsPath, APIKEY);
-        const position = activeEditor.selection.active;
-        backend.onHover(position).then(response => {
-            if (highlightMode) {
-                activeEditor.setDecorations(decorationType, response);
-            }
-            else {
-                activeEditor.setDecorations(decorationType, []);
-            }
-        });
     }
 }
 function activate(context) {
@@ -110,18 +105,45 @@ function activate(context) {
             }
         }
     });
-    vscode.window.onDidChangeTextEditorSelection(event => {
+    vscode.window.onDidChangeTextEditorSelection(() => {
+        console.log("Not Building Tree");
         if (highlightMode) {
             highlightScope();
         }
         else {
             changeable = false;
-            console.log("Not entered!!!");
         }
     }, null, context.subscriptions);
-    let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', () => {
+    vscode.workspace.onDidChangeTextDocument(async () => {
+        console.log("Building Tree");
+        activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            const editor_document = activeEditor.document;
+            backend = new BackendController_1.BackendController(editor_document.uri.fsPath, APIKEY);
+            await backend.buildSyntaxTree();
+            if (highlightMode) {
+                highlightScope();
+            }
+            else {
+                changeable = false;
+            }
+        }
+    });
+    let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', async () => {
         highlightMode = !highlightMode;
-        highlightScope();
+        if (highlightMode) {
+            console.log("Building Tree");
+            activeEditor = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                const editor_document = activeEditor.document;
+                backend = new BackendController_1.BackendController(editor_document.uri.fsPath, APIKEY);
+                await backend.buildSyntaxTree();
+                highlightScope();
+            }
+        }
+        else {
+            highlightScope();
+        }
     });
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
         const editor = vscode.window.activeTextEditor;
@@ -246,9 +268,11 @@ class BackendController {
         const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
         return codeWithPrintStatement;
     }
-    async onHover(pos) {
+    async buildSyntaxTree() {
         await this.codeParser.initializeParserAndTree();
-        const linesToHighlight = this.codeParser.getScopeAtPosition(pos);
+    }
+    onHover(pos) {
+        const [promptType, code, linesToHighlight, linesToAddPrintStatements] = this.codeParser.getScopeAtPosition(pos);
         let ranges = [];
         for (let line of linesToHighlight) {
             const code = this.codeParser.getCodeAtLines(line, line);
@@ -347,16 +371,27 @@ class CodeParser {
         this.parser.setLanguage(this.lang);
     }
     getScopeAtPosition(vs_point) {
-        this.printTree(this.tree.rootNode, 0);
         const point = {
             row: vs_point.line,
             column: vs_point.character
         };
         const line = this.getLineAtPosition(point);
         if (!line || /^\s*$/.test(line)) {
-            return [];
+            return [null, null, [], []];
         }
-        return this.getLineRanges(point.row);
+        const targetLine = point.row;
+        let node;
+        node = this.getNodeAtLine(this.tree.rootNode, targetLine, BlockTypes_1.blockTypesDict, false);
+        if (!node) {
+            return [null, null, [], []];
+        }
+        const [promptType, blockType, lineUpdates] = BlockTypes_1.blockTypesDict[node.type];
+        const blockNode = this.getNodeAtLine(node.parent, targetLine, blockType, true);
+        const startLine = blockNode.startPosition.row;
+        const lastNode = this.getLastDescendant(blockNode);
+        const endLine = lastNode.endPosition.row;
+        const code = this.getCodeAtLines(startLine, endLine);
+        return [promptType, code, [startLine, endLine], [startLine + lineUpdates[0], endLine + lineUpdates[1]]];
     }
     printTree(node, depth) {
         console.log(`${'        '.repeat(depth)}${node.type} : ${node.startPosition.row + 1}`);
@@ -364,31 +399,15 @@ class CodeParser {
             this.printTree(childNode, depth + 1);
         }
     }
-    getLineRanges(targetLine) {
-        let node;
-        node = this.getNodeAtLine(this.tree.rootNode, targetLine, BlockTypes_1.blockTypesDict);
-        const [promptType, blockType, lineUpdates] = BlockTypes_1.blockTypesDict[node.type];
-        const blockNode = this.getNodeAtLine(node.parent, targetLine, blockType);
-        console.log("node type: ", node.type);
-        console.log("node parent type: ", node.parent.type);
-        console.log("block type: ", blockNode.type);
-        if (!node) {
-            return [targetLine, targetLine];
-        }
-        const lastNode = this.getLastDescendant(blockNode);
-        const startLine = blockNode.startPosition.row;
-        const endLine = lastNode.endPosition.row;
-        return [startLine, endLine];
-    }
-    getNodeAtLine(node, targetLine, blockTypes) {
-        if (!node || node.startPosition.row > targetLine) {
+    getNodeAtLine(node, targetLine, blockTypes, isBlock) {
+        if (!node || (!isBlock && node.startPosition.row > targetLine)) {
             return null;
         }
         if (node.startPosition.row >= targetLine && node.type in blockTypes) {
             return node;
         }
         for (let i = 0, childCount = node.childCount; i < childCount; i++) {
-            const ret_node = this.getNodeAtLine(node.child(i), targetLine, blockTypes);
+            const ret_node = this.getNodeAtLine(node.child(i), targetLine, blockTypes, isBlock);
             if (ret_node) {
                 return ret_node;
             }
