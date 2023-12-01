@@ -5,6 +5,7 @@ import { BackendController } from './BackendController';
 import { InputParser } from './InputParser'
 const APIKEY= "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";
 let activeEditor: any;
+let backend: any;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
@@ -36,18 +37,13 @@ const loadingSymbol = `
 `;
 
 function highlightScope() {
-    activeEditor = vscode.window.activeTextEditor;
-    if (activeEditor) {
-        const editor_document = activeEditor.document;
-        let backend = new BackendController(editor_document.uri.fsPath, APIKEY);
-        const position = activeEditor.selection.active;
-        backend.onHover(position).then(response => {
-            if (highlightMode) {
-                activeEditor.setDecorations(decorationType, response);
-            } else {
-                activeEditor.setDecorations(decorationType, []);
-            }
-        });
+    activeEditor.setDecorations(decorationType, []);
+    const position = activeEditor.selection.active;
+    const ranges = backend.onHover(position)
+    if (highlightMode) {
+        activeEditor.setDecorations(decorationType, ranges);
+    } else {
+        activeEditor.setDecorations(decorationType, []);
     }
 }
 
@@ -110,20 +106,45 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    vscode.window.onDidChangeTextEditorSelection(event => {
+    // Do not update tree when changing the position of cursor.
+    vscode.window.onDidChangeTextEditorSelection(() => {
         if (highlightMode) {
             highlightScope();
         } else {
             changeable = false
-            console.log("Not entered!!!")
         }
     }, null, context.subscriptions);
 
-    let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', () => {
-        highlightMode = !highlightMode;
-        highlightScope();
+    // Build new tree when code is changed
+    vscode.workspace.onDidChangeTextDocument(async () => {
+        activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor) {
+            const editor_document = activeEditor.document;
+            backend = new BackendController(editor_document.uri.fsPath, APIKEY);
+            await backend.buildSyntaxTree();
+            if (highlightMode) {
+                highlightScope();
+            } else {
+                changeable = false;
+            }
+        }
     });
 
+    let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', async () => {
+        highlightMode = !highlightMode;
+        if (highlightMode) {
+            activeEditor = vscode.window.activeTextEditor;
+            if (activeEditor) {
+                const editor_document = activeEditor.document;
+                backend = new BackendController(editor_document.uri.fsPath, APIKEY);
+                await backend.buildSyntaxTree();
+                highlightScope();
+            }
+        }
+        else {
+            highlightScope();
+        }
+    });
 
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
 		const editor = vscode.window.activeTextEditor;
