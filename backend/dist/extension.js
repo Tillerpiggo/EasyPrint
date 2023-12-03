@@ -39,12 +39,36 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const BackendController_1 = __webpack_require__(2);
-const APIKEY = "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";
+const InputParser_1 = __webpack_require__(94);
+const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
 let highlightMode = false;
+const loadingSymbol = `
+    <html>
+    <head>
+        <style>
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top: 4px solid #3498db;
+                width: 20px;
+                height: 20px;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="spinner"></div>
+    </body>
+    </html>
+`;
 function highlightScope() {
     activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
@@ -63,13 +87,18 @@ function highlightScope() {
 }
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
+    let changeable = false;
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
         var _a, e_1, _b, _c;
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const inputParser = new InputParser_1.InputParser();
             const selected = editor.selection;
             let startLine = selected.start.line;
             let endLine = selected.end.line;
+            if (!selected.start.isBefore(selected.end)) {
+                return;
+            }
             let fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
             let text = editor.document.getText(fullLineRange);
             const editor_document = editor.document;
@@ -99,6 +128,7 @@ function activate(context) {
             }
             ;
             console.log("dummy dummy");
+            const promptType = inputParser.determinePromptType(text);
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {
@@ -106,6 +136,7 @@ function activate(context) {
             highlightScope();
         }
         else {
+            changeable = false;
             console.log("Not entered!!!");
         }
     }, null, context.subscriptions);
@@ -117,24 +148,58 @@ function activate(context) {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const selected = editor.selection;
-            const text = editor.document.getText(selected);
             const editor_document = editor.document;
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            const startLine = selected.start;
-            const endLine = selected.end;
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            backend.onHighlightComment(text).then(response => {
-                edit.replace(editor.document.uri, range, response);
-                vscode.workspace.applyEdit(edit);
-                vscode.window.showInformationMessage(response);
+            const start = selected.start;
+            const end = selected.end;
+            if (start.isBefore(end)) {
+                const range = new vscode.Range(start, end);
+                backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+                    const edit = new vscode.WorkspaceEdit();
+                    edit.replace(editor.document.uri, range, response);
+                    vscode.workspace.applyEdit(edit);
+                    vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
+                });
+            }
+        }
+    });
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const selected = editor.selection;
+            const editor_document = editor.document;
+            editor.edit(editBuilder => {
+                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                let lineNumbers = backend.deleteComments();
+                const start = selected.start.line;
+                const end = selected.end.line;
+                if (start === end) {
+                    lineNumbers = lineNumbers;
+                }
+                else {
+                    lineNumbers = lineNumbers.filter(lineNumber => lineNumber >= start && lineNumber <= end);
+                }
+                lineNumbers.sort((a, b) => b - a);
+                lineNumbers.forEach(lineNumber => {
+                    if (lineNumber < editor.document.lineCount) {
+                        const line = editor.document.lineAt(lineNumber);
+                        editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                }
+                else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
             });
-            console.log("reached");
         }
     });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
     context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 exports.activate = activate;
 function deactivate() { }
@@ -203,8 +268,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.BackendController = void 0;
 const CodeParser_1 = __importDefault(__webpack_require__(3));
 const PrintStatementGenerator_1 = __webpack_require__(8);
-const PromptType_1 = __webpack_require__(10);
+const PromptType_1 = __webpack_require__(9);
 const vscode = __importStar(__webpack_require__(1));
+const InputParser_1 = __webpack_require__(94);
 class BackendController {
     constructor(filePath, apiKey) {
         this.codeParser = new CodeParser_1.default(filePath);
@@ -214,7 +280,9 @@ class BackendController {
     onHighlight(code) {
         return __asyncGenerator(this, arguments, function* onHighlight_1() {
             var _a, e_1, _b, _c;
-            const promptType = PromptType_1.PromptType.SingleLine;
+            let inputParser = new InputParser_1.InputParser();
+            const promptType = inputParser.determinePromptType(code);
+            console.log(promptType);
             const linesOfCode = code.split('\n');
             const insertionLines = [linesOfCode.length];
             const printStatementGenerator = this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
@@ -255,6 +323,9 @@ class BackendController {
         const insertionLines = [endingLine.length];
         const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
         return codeWithComment;
+    }
+    deleteComments() {
+        return this.codeParser.findEasyPrintLines();
     }
 }
 exports.BackendController = BackendController;
@@ -404,6 +475,18 @@ class CodeParser {
         const fileExtension = (_a = this.filePath.split('.').pop()) !== null && _a !== void 0 ? _a : "";
         return (_b = FileType_1.fileTypeDict[fileExtension]) !== null && _b !== void 0 ? _b : "Unknown";
     }
+    findEasyPrintLines() {
+        this.sourceCode = fs.readFileSync(this.filePath, 'utf-8');
+        const lineNumbers = [];
+        let searchString = "Added by EasyPrint";
+        this.sourceCode.split('\n').forEach((line, index) => {
+            if (line.includes(searchString)) {
+                lineNumbers.push(index);
+            }
+        });
+        console.log(lineNumbers);
+        return lineNumbers;
+    }
 }
 exports["default"] = CodeParser;
 
@@ -473,59 +556,81 @@ var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _ar
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PrintStatementGenerator = void 0;
-const PromptGenerator_1 = __webpack_require__(9);
+const PromptType_1 = __webpack_require__(9);
+const PromptGenerator_1 = __webpack_require__(10);
 const APIController_1 = __webpack_require__(11);
 const OutputParser_1 = __webpack_require__(93);
 class PrintStatementGenerator {
     constructor(apiKey, fileType) {
         this.promptGenerator = new PromptGenerator_1.PromptGenerator(fileType);
         this.apiController = new APIController_1.APIController(apiKey);
-        this.outputParser = new OutputParser_1.OutputParser();
+        this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
     insertPrintStatements(promptType, code, lines, maxTokens = 100) {
         return __asyncGenerator(this, arguments, function* insertPrintStatements_1() {
-            var _a, e_1, _b, _c;
+            var _a, e_1, _b, _c, _d, e_2, _e, _f;
             const prompt = this.promptGenerator.generate(promptType, code);
             const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
-            try {
-                for (var _d = true, _e = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _f; _f = yield __await(_e.next()), _a = _f.done, !_a; _d = true) {
-                    _c = _f.value;
-                    _d = false;
-                    const updatedCode = _c;
-                    yield yield __await(updatedCode);
+            if (promptType == PromptType_1.PromptType.SingleLine) {
+                try {
+                    for (var _g = true, _h = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _j; _j = yield __await(_h.next()), _a = _j.done, !_a; _g = true) {
+                        _c = _j.value;
+                        _g = false;
+                        const updatedCode = _c;
+                        yield yield __await(updatedCode);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (!_g && !_a && (_b = _h.return)) yield __await(_b.call(_h));
+                    }
+                    finally { if (e_1) throw e_1.error; }
                 }
             }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
+            else {
+                let apiResponse = '';
                 try {
-                    if (!_d && !_a && (_b = _e.return)) yield __await(_b.call(_e));
+                    for (var _k = true, responseGenerator_1 = __asyncValues(responseGenerator), responseGenerator_1_1; responseGenerator_1_1 = yield __await(responseGenerator_1.next()), _d = responseGenerator_1_1.done, !_d; _k = true) {
+                        _f = responseGenerator_1_1.value;
+                        _k = false;
+                        const token = _f;
+                        apiResponse += token;
+                    }
                 }
-                finally { if (e_1) throw e_1.error; }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (!_k && !_d && (_e = responseGenerator_1.return)) yield __await(_e.call(responseGenerator_1));
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+                yield yield __await(this.outputParser.parse_comments(apiResponse, lines));
             }
         });
     }
     async insertComments(promptType, code, lines, maxTokens = 100) {
-        var _a, e_2, _b, _c;
+        var _a, e_3, _b, _c;
         const prompt = this.promptGenerator.generate(promptType, code);
         const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
         let apiResponse = '';
         try {
-            for (var _d = true, responseGenerator_1 = __asyncValues(responseGenerator), responseGenerator_1_1; responseGenerator_1_1 = await responseGenerator_1.next(), _a = responseGenerator_1_1.done, !_a; _d = true) {
-                _c = responseGenerator_1_1.value;
+            for (var _d = true, responseGenerator_2 = __asyncValues(responseGenerator), responseGenerator_2_1; responseGenerator_2_1 = await responseGenerator_2.next(), _a = responseGenerator_2_1.done, !_a; _d = true) {
+                _c = responseGenerator_2_1.value;
                 _d = false;
                 const token = _c;
                 apiResponse += token;
             }
         }
-        catch (e_2_1) { e_2 = { error: e_2_1 }; }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
         finally {
             try {
-                if (!_d && !_a && (_b = responseGenerator_1.return)) await _b.call(responseGenerator_1);
+                if (!_d && !_a && (_b = responseGenerator_2.return)) await _b.call(responseGenerator_2);
             }
-            finally { if (e_2) throw e_2.error; }
+            finally { if (e_3) throw e_3.error; }
         }
-        const parsedResponse = this.outputParser.parse(code, apiResponse, lines);
-        return `${parsedResponse}`;
+        const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+        return parsedResponse;
     }
 }
 exports.PrintStatementGenerator = PrintStatementGenerator;
@@ -533,49 +638,6 @@ exports.PrintStatementGenerator = PrintStatementGenerator;
 
 /***/ }),
 /* 9 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.PromptGenerator = void 0;
-const PromptType_1 = __webpack_require__(10);
-class PromptGenerator {
-    constructor(fileType) {
-        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters.`;
-    }
-    generate(promptType, code) {
-        let prompt = '';
-        switch (promptType) {
-            case PromptType_1.PromptType.SingleLine:
-                prompt = `Add a SINGLE print statement after the following code. Respond with ONLY THE PRINT STATEMENT. The code: ${code}`;
-                break;
-            case PromptType_1.PromptType.Conditional:
-                prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition.`;
-                break;
-            case PromptType_1.PromptType.Loop:
-                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively. Respond with the exact code plus your print statement.`;
-                break;
-            case PromptType_1.PromptType.VariableTracking:
-                prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
-                break;
-            case PromptType_1.PromptType.Comment:
-                prompt = `Add a short comment explaining this code: "${code}". The comment should only describe functionality, not implementation details. Ensure that the comment is in suitable comment format rather than just text.`;
-                break;
-            case PromptType_1.PromptType.Combinational:
-                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables being checked in the conditional statements. Respond with the exact code plus your print statements.`;
-                break;
-            default:
-                return 'Invalid prompt type.';
-        }
-        return prompt + this.customInstructions;
-    }
-}
-exports.PromptGenerator = PromptGenerator;
-
-
-/***/ }),
-/* 10 */
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
@@ -591,6 +653,59 @@ var PromptType;
     PromptType["Comment"] = "Comment";
     PromptType["Combinational"] = "Combinational";
 })(PromptType || (exports.PromptType = PromptType = {}));
+
+
+/***/ }),
+/* 10 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.PromptGenerator = void 0;
+const PromptType_1 = __webpack_require__(9);
+class PromptGenerator {
+    constructor(fileType) {
+        this.customInstructions = ` Only respond with code in ${fileType} and no extra characters. and add the comment " Added by EasyPrint" on the same line after each print statement`;
+    }
+    generate(promptType, code) {
+        let prompt = '';
+        switch (promptType) {
+            case PromptType_1.PromptType.SingleLine:
+                prompt = `Add a SINGLE print statement to the following code. In one print statement, print the names and values of only the variables involved, and the overall value of the expression. The code: ${code}`;
+                break;
+            case PromptType_1.PromptType.Conditional:
+                prompt = `Add a print statement at the start of each branch in this conditional statement: "${code}". The print statement should show the values of the variables being checked in the condition. 
+                  Also, add a print statement to show the ending values after the conditional is complete`;
+                break;
+            case PromptType_1.PromptType.Loop:
+                prompt = `Place a print statement at the beginning and end of this loop: "${code}". These print statements should show the loop variable's initial value and final value respectively.`;
+                break;
+            case PromptType_1.PromptType.VariableTracking:
+                prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
+                break;
+            case PromptType_1.PromptType.Comment:
+                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment 
+                  format rather than just text and add meaningful comments on the next line throughout the code if multiple lines or a single comment if only one line. If code is already thoroughly 
+                  commented just return the same code and comments that were passed`;
+                break;
+            case PromptType_1.PromptType.Combinational:
+                prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". 
+                  These print statements should show the loop variable's initial value and final value respectively and the print statements should show the values of the variables 
+                  being checked in the conditional statements. Respond with the exact code plus your print statements.`;
+                break;
+            default:
+                return 'Invalid prompt type.';
+        }
+        if (promptType !== PromptType_1.PromptType.Comment) {
+            return prompt + this.customInstructions;
+        }
+        else {
+            return prompt;
+        }
+    }
+}
+exports.PromptGenerator = PromptGenerator;
 
 
 /***/ }),
@@ -9959,7 +10074,8 @@ var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _ar
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
-    constructor() {
+    constructor(fileType) {
+        this.fileType = fileType;
         this.isInsideCodeBlock = false;
         this.tokensToSkip = 0;
         this.hasAddedCodeInCurrentBlock = false;
@@ -10038,8 +10154,48 @@ class OutputParser {
         }
         return code;
     }
+    parse_comments(apiResponse, lines) {
+        let responseLines = apiResponse.split('\n');
+        let inCodeBlock = false;
+        let extractedCode = responseLines.filter(line => {
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock;
+                return false;
+            }
+            return inCodeBlock;
+        });
+        return extractedCode.join('\n');
+    }
 }
 exports.OutputParser = OutputParser;
+
+
+/***/ }),
+/* 94 */
+/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.InputParser = void 0;
+const PromptType_1 = __webpack_require__(9);
+class InputParser {
+    determinePromptType(input) {
+        const conditionalKeywords = ['if', 'else if', 'else', 'switch', 'case'];
+        const loopKeywords = ['for', 'while', 'do'];
+        if (loopKeywords.some(keyword => input.includes(keyword)) && conditionalKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Combinational;
+        }
+        if (loopKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Loop;
+        }
+        if (conditionalKeywords.some(keyword => input.includes(keyword))) {
+            return PromptType_1.PromptType.Conditional;
+        }
+        return PromptType_1.PromptType.SingleLine;
+    }
+}
+exports.InputParser = InputParser;
 
 
 /***/ })

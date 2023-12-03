@@ -26,12 +26,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(require("vscode"));
 const BackendController_1 = require("./BackendController");
-const APIKEY = "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";
+const InputParser_1 = require("./InputParser");
+const APIKEY = "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";
 let activeEditor;
 let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
 let highlightMode = false;
+const loadingSymbol = `
+    <html>
+    <head>
+        <style>
+            .spinner {
+                border: 4px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top: 4px solid #3498db;
+                width: 20px;
+                height: 20px;
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="spinner"></div>
+    </body>
+    </html>
+`;
 function highlightScope() {
     activeEditor = vscode.window.activeTextEditor;
     if (activeEditor) {
@@ -50,31 +74,41 @@ function highlightScope() {
 }
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
+    let changeable = false;
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
+            const inputParser = new InputParser_1.InputParser();
             const selected = editor.selection;
             const text = editor.document.getText(selected);
             const editor_document = editor.document;
+            const promptType = inputParser.determinePromptType(text);
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const startLine = selected.start;
             const endLine = selected.end;
+            if (startLine.isBefore(endLine)) {
+                changeable = true;
+            }
+            else {
+                changeable = false;
+            }
             const range = new vscode.Range(startLine, endLine);
             const edit = new vscode.WorkspaceEdit();
-            backend.onHighlight(text).then(response => {
-                edit.replace(editor.document.uri, range, response);
-                vscode.workspace.applyEdit(edit);
-                vscode.window.showInformationMessage(response);
-            });
-            console.log("dummy dummy");
+            if (changeable) {
+                backend.onHighlight(text).then(response => {
+                    edit.replace(editor.document.uri, range, response);
+                    vscode.workspace.applyEdit(edit);
+                    vscode.window.showInformationMessage(response);
+                });
+            }
         }
     });
     vscode.window.onDidChangeTextEditorSelection(event => {
-        console.log("highlight mode: ", highlightMode);
         if (highlightMode) {
             highlightScope();
         }
         else {
+            changeable = false;
             console.log("Not entered!!!");
         }
     }, null, context.subscriptions);
@@ -82,8 +116,62 @@ function activate(context) {
         highlightMode = !highlightMode;
         highlightScope();
     });
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const selected = editor.selection;
+            const editor_document = editor.document;
+            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+            const start = selected.start;
+            const end = selected.end;
+            if (start.isBefore(end)) {
+                const range = new vscode.Range(start, end);
+                backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+                    const edit = new vscode.WorkspaceEdit();
+                    edit.replace(editor.document.uri, range, response);
+                    vscode.workspace.applyEdit(edit);
+                    vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
+                });
+            }
+        }
+    });
+    let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            const selected = editor.selection;
+            const editor_document = editor.document;
+            editor.edit(editBuilder => {
+                let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+                let lineNumbers = backend.deleteComments();
+                const start = selected.start.line;
+                const end = selected.end.line;
+                if (start === end) {
+                    lineNumbers = lineNumbers;
+                }
+                else {
+                    lineNumbers = lineNumbers.filter(lineNumber => lineNumber >= start && lineNumber <= end);
+                }
+                lineNumbers.sort((a, b) => b - a);
+                lineNumbers.forEach(lineNumber => {
+                    if (lineNumber < editor.document.lineCount) {
+                        const line = editor.document.lineAt(lineNumber);
+                        editBuilder.delete(line.rangeIncludingLineBreak);
+                    }
+                });
+            }).then(success => {
+                if (success) {
+                    vscode.window.showInformationMessage('Lines deleted successfully.');
+                }
+                else {
+                    vscode.window.showErrorMessage('Failed to delete lines.');
+                }
+            });
+        }
+    });
     context.subscriptions.push(keybindingHover);
     context.subscriptions.push(keybindingHighlight);
+    context.subscriptions.push(keybindingCommentRequest);
+    context.subscriptions.push(keybindingDelete);
 }
 exports.activate = activate;
 function deactivate() { }

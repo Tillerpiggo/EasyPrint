@@ -1,3 +1,6 @@
 export declare class OutputParser {
-    parse(code: string, response: string, lines: number[]): string | null;
+    private fileType;
+    constructor(fileType: string);
+    parse(code: string, response: string, lines: number[]): string;
+    parse_comments(apiResponse: string, lines: number[]): string;
 }

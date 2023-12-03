@@ -31,13 +31,17 @@ const CodeParser_1 = __importDefault(require("./CodeParser"));
 const PrintStatementGenerator_1 = require("./PrintStatementGenerator");
 const PromptType_1 = require("./PromptType");
 const vscode = __importStar(require("vscode"));
+const InputParser_1 = require("./InputParser");
 class BackendController {
     constructor(filePath, apiKey) {
         this.codeParser = new CodeParser_1.default(filePath);
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
+        this.commentGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
     async onHighlight(code) {
-        const promptType = PromptType_1.PromptType.SingleLine;
+        let inputParser = new InputParser_1.InputParser();
+        const promptType = inputParser.determinePromptType(code);
+        console.log(promptType);
         const linesOfCode = code.split('\n');
         const insertionLines = [linesOfCode.length];
         const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
@@ -56,6 +60,16 @@ class BackendController {
             ranges.push(new vscode.Range(start, end));
         }
         return ranges;
+    }
+    async onHighlightComment(code) {
+        const promptType = PromptType_1.PromptType.Comment;
+        const endingLine = code.split('\n');
+        const insertionLines = [endingLine.length];
+        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
+        return codeWithComment;
+    }
+    deleteComments() {
+        return this.codeParser.findEasyPrintLines();
     }
 }
 exports.BackendController = BackendController;

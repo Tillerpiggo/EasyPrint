@@ -1,14 +1,16 @@
 export class OutputParser {
+    private fileType: string;
     private isInsideCodeBlock: boolean;
     private hasAddedCodeInCurrentBlock: boolean;
     private tokensToSkip: number;
     
-    constructor() {
+    constructor(fileType: string) {  
+      this.fileType = fileType;
       this.isInsideCodeBlock = false;
       this.tokensToSkip = 0;
       this.hasAddedCodeInCurrentBlock = false;
     }
-    
+
     parse(code: string, response: string, lines: number[]): string {
       // Find the indentation of the last non-empty line
       const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
@@ -102,5 +104,22 @@ export class OutputParser {
     // If we're not inside a code block, return the original code
     
     return code;
+  }
+
+  parse_comments(apiResponse: string, lines: number[]):string {
+      // Split the response into lines
+      let responseLines = apiResponse.split('\n');
+
+      // Filter in lines within code blocks, excluding the code block delimiters
+      let inCodeBlock = false;
+      let extractedCode = responseLines.filter(line => {
+        if (line.trim().startsWith('```')) {
+          inCodeBlock = !inCodeBlock;
+          return false; // Skip the code block delimiters
+        }
+        return inCodeBlock;
+      });
+    // Join the extracted code lines back into a single string
+    return extractedCode.join('\n');
   }
 }

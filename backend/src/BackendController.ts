@@ -3,6 +3,7 @@ import CodeParser, { FileParser} from './CodeParser';
 import { PrintStatementGenerator } from './PrintStatementGenerator';
 import { PromptType } from './PromptType';
 import * as vscode from 'vscode';
+import {InputParser} from './InputParser'
 //import { CodeModifier } from './CodeModifier';
 
 export class BackendController {
@@ -19,8 +20,9 @@ export class BackendController {
     }
 
     async *onHighlight(code: string): AsyncGenerator<string, void, unknown> {
-        const promptType = PromptType.SingleLine;
-    
+        let inputParser = new InputParser()
+        const promptType = inputParser.determinePromptType(code)
+        console.log(promptType)
         // Insert at the end of the code
         const linesOfCode = code.split('\n');
         const insertionLines = [linesOfCode.length];
@@ -59,5 +61,10 @@ export class BackendController {
 
         const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
         return codeWithComment;
+    }
+    
+    // Deleting
+    deleteComments(): number[] {
+        return this.codeParser.findEasyPrintLines();
     }
 }

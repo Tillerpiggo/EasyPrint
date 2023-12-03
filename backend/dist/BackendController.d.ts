@@ -7,4 +7,5 @@ export declare class BackendController {
     onHighlight(code: string): AsyncGenerator<string, void, unknown>;
     onHover(pos: vscode.Position): Promise<vscode.Range[]>;
     onHighlightComment(code: string): Promise<string>;
+    deleteComments(): number[];
 }
