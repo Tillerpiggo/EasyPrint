@@ -51,7 +51,8 @@ Follow these steps to install the software on your computer:
 ## Removing Print Statements ('cmd+shift+d' in Mac or 'ctrl+alt+d' in Windows)
 - To remove all print statements added by EasyPrint in a file:
     - Open the desired file
-    - Click  'cmd+shift+d' in Mac or 'ctrl+alt+d' in Windows to delete all EasyPrint print statements
+    - Click 'cmd+shift+d' in Mac or 'ctrl+alt+d' in Windows to delete all EasyPrint print statements
+    - Highlight section of code and click 'cmd+shift+d' in Mac or 'ctrl+alt+d' in Windows to delete all EasyPrint print statements in the highlighted code
 ## Commenting ('cmd+shift+e' in Mac or 'ctrl+alt+e' in Windows)
 - Highlight a single line you want to add a comment for
 - Hit 'cmd+shift+e' in Mac or 'ctrl+alt+e' in Windows to add the comment for the single line
