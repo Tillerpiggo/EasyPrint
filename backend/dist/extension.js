@@ -28,6 +28,13 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
@@ -77,32 +84,47 @@ function highlightScope() {
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
     let changeable = false;
-    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
+    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
+        var _a, e_1, _b, _c;
         const editor = vscode.window.activeTextEditor;
         if (editor) {
             const inputParser = new InputParser_1.InputParser();
             const selected = editor.selection;
-            const text = editor.document.getText(selected);
+            let startLine = selected.start.line;
+            let endLine = selected.end.line;
+            if (!selected.start.isBefore(selected.end)) {
+                return;
+            }
+            let fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
+            let text = editor.document.getText(fullLineRange);
             const editor_document = editor.document;
-            const promptType = inputParser.determinePromptType(text);
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            const startLine = selected.start;
-            const endLine = selected.end;
-            if (startLine.isBefore(endLine)) {
-                changeable = true;
-            }
-            else {
-                changeable = false;
-            }
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            if (changeable) {
-                backend.onHighlight(text).then(response => {
-                    edit.replace(editor.document.uri, range, response);
-                    vscode.workspace.applyEdit(edit);
+            try {
+                for (var _d = true, _e = __asyncValues(backend.onHighlight(text)), _f; _f = await _e.next(), _a = _f.done, !_a; _d = true) {
+                    _c = _f.value;
+                    _d = false;
+                    const response = _c;
+                    const edit = new vscode.WorkspaceEdit();
+                    edit.replace(editor.document.uri, fullLineRange, response);
+                    await vscode.workspace.applyEdit(edit);
+                    const responseLines = (response.match(/\n/g) || []).length;
+                    if (startLine + responseLines < editor.document.lineCount) {
+                        endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
+                    }
+                    fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
                     vscode.window.showInformationMessage(response);
-                });
+                }
             }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = _e.return)) await _b.call(_e);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            ;
+            console.log("dummy dummy");
+            const promptType = inputParser.determinePromptType(text);
         }
     });
     vscode.window.onDidChangeTextEditorSelection(() => {
@@ -243,6 +265,25 @@ var __importStar = (this && this.__importStar) || function (mod) {
     __setModuleDefault(result, mod);
     return result;
 };
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -259,14 +300,31 @@ class BackendController {
         this.printStatementGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
         this.commentGenerator = new PrintStatementGenerator_1.PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
-    async onHighlight(code) {
-        let inputParser = new InputParser_1.InputParser();
-        const promptType = inputParser.determinePromptType(code);
-        console.log(promptType);
-        const linesOfCode = code.split('\n');
-        const insertionLines = [linesOfCode.length];
-        const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
-        return codeWithPrintStatement;
+    onHighlight(code) {
+        return __asyncGenerator(this, arguments, function* onHighlight_1() {
+            var _a, e_1, _b, _c;
+            let inputParser = new InputParser_1.InputParser();
+            const promptType = inputParser.determinePromptType(code);
+            console.log(promptType);
+            const linesOfCode = code.split('\n');
+            const insertionLines = [linesOfCode.length];
+            const printStatementGenerator = this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+            try {
+                for (var _d = true, printStatementGenerator_1 = __asyncValues(printStatementGenerator), printStatementGenerator_1_1; printStatementGenerator_1_1 = yield __await(printStatementGenerator_1.next()), _a = printStatementGenerator_1_1.done, !_a; _d = true) {
+                    _c = printStatementGenerator_1_1.value;
+                    _d = false;
+                    const updatedCode = _c;
+                    yield yield __await(updatedCode);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = printStatementGenerator_1.return)) yield __await(_b.call(printStatementGenerator_1));
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        });
     }
     async buildSyntaxTree() {
         await this.codeParser.initializeParserAndTree();
@@ -522,11 +580,30 @@ var Module=void 0!==Module?Module:{},TreeSitter=function(){var initPromise,docum
 
 
 /***/ }),
-/* 9 */
-/***/ ((__unused_webpack_module, exports, __webpack_require__) => {
+/* 8 */
+/***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
 
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.PrintStatementGenerator = void 0;
 const PromptType_1 = __webpack_require__(10);
@@ -539,23 +616,71 @@ class PrintStatementGenerator {
         this.apiController = new APIController_1.APIController(apiKey);
         this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
-    async insertPrintStatements(promptType, code, lines, maxTokens = 100) {
-        const prompt = this.promptGenerator.generate(promptType, code);
-        const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-        let parsedResponse;
-        if (promptType === PromptType_1.PromptType.SingleLine) {
-            parsedResponse = this.outputParser.parse(code, apiResponse, lines);
-        }
-        else {
-            parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
-        }
-        return `${parsedResponse}`;
+    insertPrintStatements(promptType, code, lines, maxTokens = 100) {
+        return __asyncGenerator(this, arguments, function* insertPrintStatements_1() {
+            var _a, e_1, _b, _c, _d, e_2, _e, _f;
+            const prompt = this.promptGenerator.generate(promptType, code);
+            const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+            if (promptType == PromptType_1.PromptType.SingleLine) {
+                try {
+                    for (var _g = true, _h = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _j; _j = yield __await(_h.next()), _a = _j.done, !_a; _g = true) {
+                        _c = _j.value;
+                        _g = false;
+                        const updatedCode = _c;
+                        yield yield __await(updatedCode);
+                    }
+                }
+                catch (e_1_1) { e_1 = { error: e_1_1 }; }
+                finally {
+                    try {
+                        if (!_g && !_a && (_b = _h.return)) yield __await(_b.call(_h));
+                    }
+                    finally { if (e_1) throw e_1.error; }
+                }
+            }
+            else {
+                let apiResponse = '';
+                try {
+                    for (var _k = true, responseGenerator_1 = __asyncValues(responseGenerator), responseGenerator_1_1; responseGenerator_1_1 = yield __await(responseGenerator_1.next()), _d = responseGenerator_1_1.done, !_d; _k = true) {
+                        _f = responseGenerator_1_1.value;
+                        _k = false;
+                        const token = _f;
+                        apiResponse += token;
+                    }
+                }
+                catch (e_2_1) { e_2 = { error: e_2_1 }; }
+                finally {
+                    try {
+                        if (!_k && !_d && (_e = responseGenerator_1.return)) yield __await(_e.call(responseGenerator_1));
+                    }
+                    finally { if (e_2) throw e_2.error; }
+                }
+                yield yield __await(this.outputParser.parse_comments(apiResponse, lines));
+            }
+        });
     }
     async insertComments(promptType, code, lines, maxTokens = 100) {
+        var _a, e_3, _b, _c;
         const prompt = this.promptGenerator.generate(promptType, code);
-        const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+        const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+        let apiResponse = '';
+        try {
+            for (var _d = true, responseGenerator_2 = __asyncValues(responseGenerator), responseGenerator_2_1; responseGenerator_2_1 = await responseGenerator_2.next(), _a = responseGenerator_2_1.done, !_a; _d = true) {
+                _c = responseGenerator_2_1.value;
+                _d = false;
+                const token = _c;
+                apiResponse += token;
+            }
+        }
+        catch (e_3_1) { e_3 = { error: e_3_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = responseGenerator_2.return)) await _b.call(responseGenerator_2);
+            }
+            finally { if (e_3) throw e_3.error; }
+        }
         const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
-        return `${parsedResponse}`;
+        return parsedResponse;
     }
 }
 exports.PrintStatementGenerator = PrintStatementGenerator;
@@ -639,6 +764,25 @@ exports.PromptGenerator = PromptGenerator;
 
 "use strict";
 
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -649,20 +793,36 @@ class APIController {
     constructor(apiKey) {
         this.openai = new openai_1.default({ apiKey });
     }
-    async generateResponse(prompt, maxTokens = 100) {
-        const response = await this.openai.chat.completions.create({
-            model: 'gpt-3.5-turbo-1106',
-            messages: [
-                { "role": "system", "content": "You are EasyPrint, the world's best printing plugin." },
-                { "role": "user", "content": prompt },
-            ]
+    generateResponse(prompt, maxTokens = 100) {
+        return __asyncGenerator(this, arguments, function* generateResponse_1() {
+            var _a, e_1, _b, _c;
+            const stream = yield __await(this.openai.chat.completions.create({
+                model: 'gpt-3.5-turbo-1106',
+                messages: [
+                    { "role": "system", "content": "You are EasyPrint, the world's best printing plugin." },
+                    { "role": "user", "content": prompt },
+                ],
+                stream: true
+            }));
+            try {
+                for (var _d = true, stream_1 = __asyncValues(stream), stream_1_1; stream_1_1 = yield __await(stream_1.next()), _a = stream_1_1.done, !_a; _d = true) {
+                    _c = stream_1_1.value;
+                    _d = false;
+                    const chunk = _c;
+                    if (chunk.choices && chunk.choices.length > 0 && chunk.choices[0].delta && chunk.choices[0].delta.content) {
+                        const text = chunk.choices[0].delta.content;
+                        yield yield __await(text);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = stream_1.return)) yield __await(_b.call(stream_1));
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
         });
-        if (response && response.choices && response.choices.length > 0 && response.choices[0].message && response.choices[0].message.content) {
-            return response.choices[0].message.content.trim();
-        }
-        else {
-            return "FAIL";
-        }
     }
 }
 exports.APIController = APIController;
@@ -9937,16 +10097,38 @@ exports.Moderations = Moderations;
 
 
 /***/ }),
-/* 94 */
-/***/ ((__unused_webpack_module, exports) => {
+/* 93 */
+/***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
 
+var __asyncValues = (this && this.__asyncValues) || function (o) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var m = o[Symbol.asyncIterator], i;
+    return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+    function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+    function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+};
+var __await = (this && this.__await) || function (v) { return this instanceof __await ? (this.v = v, this) : new __await(v); }
+var __asyncGenerator = (this && this.__asyncGenerator) || function (thisArg, _arguments, generator) {
+    if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+    var g = generator.apply(thisArg, _arguments || []), i, q = [];
+    return i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i;
+    function verb(n) { if (g[n]) i[n] = function (v) { return new Promise(function (a, b) { q.push([n, v, a, b]) > 1 || resume(n, v); }); }; }
+    function resume(n, v) { try { step(g[n](v)); } catch (e) { settle(q[0][3], e); } }
+    function step(r) { r.value instanceof __await ? Promise.resolve(r.value.v).then(fulfill, reject) : settle(q[0][2], r); }
+    function fulfill(value) { resume("next", value); }
+    function reject(value) { resume("throw", value); }
+    function settle(f, v) { if (f(v), q.shift(), q.length) resume(q[0][0], q[0][1]); }
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.OutputParser = void 0;
 class OutputParser {
     constructor(fileType) {
         this.fileType = fileType;
+        this.isInsideCodeBlock = false;
+        this.tokensToSkip = 0;
+        this.hasAddedCodeInCurrentBlock = false;
     }
     parse(code, response, lines) {
         var _a;
@@ -9964,6 +10146,63 @@ class OutputParser {
         const indentedResponse = responseLines.map(line => lastLineIndentation + line).join('\n');
         const updatedCode = code + '\n' + indentedResponse;
         return updatedCode;
+    }
+    processTokens(code, tokenGenerator, lines) {
+        return __asyncGenerator(this, arguments, function* processTokens_1() {
+            var _a, e_1, _b, _c;
+            this.isInsideCodeBlock = false;
+            this.tokensToSkip = 0;
+            this.hasAddedCodeInCurrentBlock = false;
+            try {
+                for (var _d = true, tokenGenerator_1 = __asyncValues(tokenGenerator), tokenGenerator_1_1; tokenGenerator_1_1 = yield __await(tokenGenerator_1.next()), _a = tokenGenerator_1_1.done, !_a; _d = true) {
+                    _c = tokenGenerator_1_1.value;
+                    _d = false;
+                    const token = _c;
+                    code = this.parseToken(code, token, lines);
+                    yield yield __await(code);
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = tokenGenerator_1.return)) yield __await(_b.call(tokenGenerator_1));
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+        });
+    }
+    parseToken(code, token, lines) {
+        var _a;
+        console.log(`token: ${token}`);
+        if (this.tokensToSkip > 0) {
+            this.tokensToSkip--;
+            return code;
+        }
+        if (token.startsWith('```')) {
+            this.isInsideCodeBlock = !this.isInsideCodeBlock;
+            if (this.isInsideCodeBlock) {
+                this.tokensToSkip = 2;
+                this.hasAddedCodeInCurrentBlock = false;
+            }
+            return code;
+        }
+        if (this.isInsideCodeBlock) {
+            let indentedToken = token;
+            const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
+            if (token == '\n') {
+                indentedToken = '\n' + lastLineIndentation;
+            }
+            if (!this.hasAddedCodeInCurrentBlock) {
+                console.log("Adding inside current code block!!");
+                indentedToken = '\n' + lastLineIndentation + indentedToken;
+                console.log(`Indented token: ${indentedToken}`);
+                this.hasAddedCodeInCurrentBlock = true;
+            }
+            const updatedCode = code + indentedToken;
+            console.log(`updatedCode: ${code}`);
+            return updatedCode;
+        }
+        return code;
     }
     parse_comments(apiResponse, lines) {
         let responseLines = apiResponse.split('\n');

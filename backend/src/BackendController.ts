@@ -19,16 +19,19 @@ export class BackendController {
         this.commentGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
 
-    async onHighlight(code: string): Promise<string> {
+    async *onHighlight(code: string): AsyncGenerator<string, void, unknown> {
         let inputParser = new InputParser()
         const promptType = inputParser.determinePromptType(code)
         console.log(promptType)
         // Insert at the end of the code
-        const linesOfCode = code.split('\n')
-        const insertionLines = [linesOfCode.length]
+        const linesOfCode = code.split('\n');
+        const insertionLines = [linesOfCode.length];
         
-        const codeWithPrintStatement = await this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
-        return codeWithPrintStatement;
+        const printStatementGenerator = this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+        
+        for await (const updatedCode of printStatementGenerator) {
+            yield updatedCode;
+        }
     }
 
     async buildSyntaxTree(): Promise<void> {

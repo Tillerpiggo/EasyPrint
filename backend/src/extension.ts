@@ -56,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "easyprint" is now active!');
 
     let changeable = false
-	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', () => {
+	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
         const editor = vscode.window.activeTextEditor;
         
 
@@ -64,11 +64,53 @@ export function activate(context: vscode.ExtensionContext) {
             const inputParser = new InputParser()
             
             const selected = editor.selection;
-            // get text and store it in a variable
-            const text = editor.document.getText(selected);
+            // get line numbers of start and end of the selection
+            let startLine = selected.start.line;
+            let endLine = selected.end.line;
+
+            if (!selected.start.isBefore(selected.end)) {
+                return;
+            }
+        
+            // Create a new range that includes the entire lines
+            let fullLineRange = new vscode.Range(
+                startLine, 0,
+                endLine, editor.document.lineAt(endLine).range.end.character
+            );
+        
+            // Get the text of the entire lines
+            let text = editor.document.getText(fullLineRange);
             // get the document that is open in the editor
             const editor_document = editor.document;
+        
+            // send the text to the backend controller
+            let backend = new BackendController(editor_document.fileName, APIKEY)
+        
+            for await (const response of backend.onHighlight(text)) {
+                const edit = new vscode.WorkspaceEdit();
+        
+                // Replace the full lines with the response
+                edit.replace(editor.document.uri, fullLineRange, response)
+                await vscode.workspace.applyEdit(edit)
+        
+                const responseLines = (response.match(/\n/g) || []).length;
+                if (startLine + responseLines < editor.document.lineCount) {
+                    // Update endLine to the end of the last line of the response
+                    endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
+                }
+        
+                // Update the range
+                fullLineRange = new vscode.Range(
+                    startLine, 0,
+                    endLine, editor.document.lineAt(endLine).range.end.character
+                );
+        
+                vscode.window.showInformationMessage(response)
+            };
+        
+            console.log("dummy dummy");
             const promptType = inputParser.determinePromptType(text)
+            /*
             // send the text to the backend controller
             let backend = new BackendController(editor_document.fileName, APIKEY)
             const startLine = selected.start;
@@ -87,7 +129,7 @@ export function activate(context: vscode.ExtensionContext) {
                 vscode.workspace.applyEdit(edit)
                 vscode.window.showInformationMessage(response)
             });
-        }
+            */
             // const statement = text.split(/\s+/);
             // let i = 0;
 

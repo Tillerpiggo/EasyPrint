@@ -13,22 +13,34 @@ export class PrintStatementGenerator {
     this.apiController = new APIController(apiKey);
     this.outputParser = new OutputParser(fileType);
   }
-  async insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
+  async *insertPrintStatements(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): AsyncGenerator<string, void, unknown> {
     const prompt = this.promptGenerator.generate(promptType, code);
-    const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
-    let parsedResponse;
-    if (promptType === PromptType.SingleLine){
-     parsedResponse = this.outputParser.parse(code, apiResponse, lines);
-    }else{
-     parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+    const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+    
+    if (promptType == PromptType.SingleLine) {
+      for await (const updatedCode of this.outputParser.processTokens(code, responseGenerator, lines)) {
+        yield updatedCode;
+      }
+    } else {
+      let apiResponse = '';
+      for await (const token of responseGenerator) {
+        apiResponse += token;
+      }
+      yield this.outputParser.parse_comments(apiResponse, lines);
     }
-    return `${parsedResponse}`;
   }
+  
   async insertComments(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): Promise<string> {
     const prompt = this.promptGenerator.generate(promptType, code);
-    const apiResponse = await this.apiController.generateResponse(prompt, maxTokens);
+    const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
+    
+    let apiResponse = '';
+    for await (const token of responseGenerator) {
+      apiResponse += token;
+    }
+    
     const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
 
-    return `${parsedResponse}`;
+    return parsedResponse
   }
 }
