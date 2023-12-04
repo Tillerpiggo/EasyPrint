@@ -1,29 +1,42 @@
-# EasyPrint
-- version v1.2
-- Operational functions
-   - Print generation of single variable - By highlighting the variable you wish to generate a print statement for and use the macro CTRL+ALT+H a print Statement will be added to your code for the variable.
-   - Add comments to single line of code or large blocks of code - By highlighting the code and using the macro CTRL+ALT+E, comments will be added to your code.
-   - Delete the added print statements - Easliy delete all of the added print statements by using the macro CTRL+ALT+D and all of the print statements will disappear.
-   - Delete only some of the print statements you are no longer using- By highlight a block of code and using the macro CTRL+ALT+D and all of the print statements that were added in the highlight code will disappear.
-## Idea
-- This product is meant to be used as an easy debugging tool for software developers, no matter the language they are programming in. The product will modify source code comments and add and remove specific print statements. This easy tool is meant to perform the menial/repetitive work and allow the software developer to maintain their thoughts on the functionality of their code. 
+# 🌟 EasyPrint - Print. Easily.
 
-## Goals
-- Create a connectable VSCode extension to assist in debugging code by:
-    * Generating and adding print statements to code
-    * Highlight and "debuggable" code to enhance user experience (UI)
-    * Removing the added print statements
-    * Generating meaningful comments without having to write them all
+**Current Version:** v1.4  
 
-## Repository Layout
-- The repository mirrors our architecture, with our largest and most involved folder being the backend. In here, we have all relevant files for the backend controller (code modifier and code structure parser) and the print statement controller (response parser, prompt generator, and API controller). We also have a folder for UI related files (which will be closely involved with the VSCode extension itself).
+EasyPrint is an innovative tool for software developers, streamlining the debugging process across various programming languages. This VSCode extension empowers developers by automating the generation and management of print statements, allowing them to focus on their code's functionality.
 
-## Set Up
- - First make sure npm is installed and up-to-date
- - Run "npm run compile"
- - Click fn+F5 (mac) or F5 (windows)
-    - This will open a new window called the "Extension Development Host"
-    - This is a new window of vscode that has the extension working
- - Highlight any piece of code and click cmd+shift+h (mac) or ctrl+alt+h (windows) to generate debugging print statements!
- - To delete the added statements click cmd+shift+d (mac) or ctrl+alt+d (windows) and the added statements will be deleted!
- - Need help commenting?  Highlight some code and click cmd+shift+e (mac) or ctrl+alt+e (windows) and meaningful comments will appear in your code!
+### 🚀 Features
+
+#### Adding Print Statements
+- **Single Line:** Quickly add print statements to any single line of code. ✅
+- **Variable-Specific Debugging:** Generate print statements for specific variables to track their values. ❌
+- **Branch Debugging:** Generate print statements for an "if-else" structure to track useful values. ✅
+- **Loop Debugging:** Generate print statements for an loop structures to track useful values. ✅
+  
+
+#### Removing Print Statements
+- **Bulk Removal:** Remove all EasyPrint-generated print statements in a file with ease. ✅
+- **Related Instances:** Selectively remove instances of related EasyPrint statements. ✅
+
+#### Adding Comments
+- **Single Line Comments:** Easily add comments to single lines of code. ✅
+- **Block Comments:** Attach comments to entire code blocks for better clarity. ✅
+
+### 💡 Idea
+Our goal is to create an easy-to-use debugging tool that generates useful print statments and comments instantly, letting developers concentrate on their code's core logic and functionality.
+
+### 🎯 Goals
+- **VSCode Integration:** Create a connectable extension to enhance the debugging experience.
+- **User Interface:** Intuitive UI for highlighting and interacting with "debuggable" code.
+- **Efficiency:** Quick addition/removal of print statements and tracking of variable changes.
+
+### 🏗️ Repository Layout
+- **Backend:** Contains code modifier, parser, and print statement controller.
+- **UI Files:** Dedicated to the VSCode extension's user interface.
+
+### 🛠️ Set Up
+1. Ensure npm is installed and up-to-date: `npm install`
+2. Compile the extension: `npm run compile`
+3. Launch the Extension Development Host:
+   - For Mac: Press `fn+F5`
+   - For Windows: Press `F5`
+4. Use `cmd+shift+h` (Mac) or `ctrl+alt+h` (Windows) to generate debugging print statements in the code.
