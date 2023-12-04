@@ -16,12 +16,20 @@
   "contributes": {
     "commands": [
       {
-        "command": "easyprint.helloWorld",
-        "title": "Hello World"
-      },
-      {
         "command": "easyprint.keybindingHover",
         "title": "Keybinding"
+      },
+      {
+        "command": "easyprint.keybindingHighlight",
+        "title": "Add Print Statements - EasyPrint"
+      },
+      {
+        "command": "easyprint.keybindingCommentRequest",
+        "title": "Add Comments - EasyPrint"
+      },
+      {
+        "command": "easyprint.keybindingDelete",
+        "title": "Delete All EasyPrint Lines"
       }
     ],
     "keybindings": [
@@ -44,9 +52,27 @@
       {
         "command": "easyprint.keybindingDelete",
         "key": "ctrl+alt+d",
-        "mac": "ctrl+shift+d"
+        "mac": "cmd+shift+d"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+      {
+        "command": "easyprint.keybindingHighlight",
+        "group": "navigation",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "easyprint.keybindingCommentRequest",
+        "group": "navigation",
+        "when": "editorHasSelection"
+      },
+      {
+        "command": "easyprint.keybindingDelete",
+        "group": "navigation"
       }
     ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
