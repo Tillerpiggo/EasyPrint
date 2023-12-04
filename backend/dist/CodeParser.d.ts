@@ -7,10 +7,13 @@ export interface FileParser {
     fileType: string;
     initializeParserAndTree(): Promise<void>;
     setParserLanguage(): Promise<void>;
-    getScopeAtPosition(point: vscode.Position): number[];
+    getScopeAtPosition(point: vscode.Position): [string | null, string | null, number[], number[]];
     printTree(node: any, depth: number): void;
-    getLineRanges(targetLine: number): number[];
-    getNodeAtLine(node: any, targetLine: number): any;
+    getNodeAtLine(node: any, targetLine: number, blockTypes: {
+        [key: string]: ([string, {
+            [key: string]: null;
+        }, number[]] | null);
+    }, isBlock: boolean): any;
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getFileType(): string;
@@ -27,10 +30,13 @@ declare class CodeParser implements FileParser {
     constructor(filePath: string);
     initializeParserAndTree(): Promise<void>;
     setParserLanguage(): Promise<void>;
-    getScopeAtPosition(vs_point: vscode.Position): number[];
+    getScopeAtPosition(vs_point: vscode.Position): [string | null, string | null, number[], number[]];
     printTree(node: any, depth: number): void;
-    getLineRanges(targetLine: number): number[];
-    getNodeAtLine(node: any, targetLine: number): any;
+    getNodeAtLine(node: any, targetLine: number, blockTypes: {
+        [key: string]: ([string, {
+            [key: string]: null;
+        }, number[]] | null);
+    }, isBlock: boolean): any;
     getCodeAtLines(start: number, end: number): string;
     getLastDescendant(node: any): any;
     getLineAtPosition(point: Point): string;

@@ -4,8 +4,9 @@ export declare class BackendController {
     private printStatementGenerator;
     private commentGenerator;
     constructor(filePath: string, apiKey: string);
-    onHighlight(code: string): AsyncGenerator<string, void, unknown>;
-    onHover(pos: vscode.Position): Promise<vscode.Range[]>;
+    onHighlight(code: string): Promise<string>;
+    buildSyntaxTree(): Promise<void>;
+    onHover(pos: vscode.Position): vscode.Range[];
     onHighlightComment(code: string): Promise<string>;
     deleteComments(): number[];
 }

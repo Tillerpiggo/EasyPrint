@@ -33,10 +33,13 @@ export class BackendController {
             yield updatedCode;
         }
     }
-    
-    async onHover(pos: vscode.Position): Promise<vscode.Range[]> {
+
+    async buildSyntaxTree(): Promise<void> {
         await this.codeParser.initializeParserAndTree()
-        const linesToHighlight = this.codeParser.getScopeAtPosition(pos);
+    }
+    
+    onHover(pos: vscode.Position): vscode.Range[] {
+        const [promptType, code, linesToHighlight, linesToAddPrintStatements] = this.codeParser.getScopeAtPosition(pos);
         let ranges: vscode.Range[] = [];
         for (let line of linesToHighlight) {
             const code = this.codeParser.getCodeAtLines(line, line);
