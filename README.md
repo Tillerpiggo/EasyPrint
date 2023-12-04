@@ -1,6 +1,6 @@
 # 🌟 EasyPrint - Print. Easily.
 
-**Current Version:** v1.4  
+**Current Version:** v1.4 Final Release 
 
 EasyPrint is an innovative tool for software developers, streamlining the debugging process across various programming languages. This VSCode extension empowers developers by automating the generation and management of print statements, allowing them to focus on their code's functionality.
 
