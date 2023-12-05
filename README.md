@@ -34,9 +34,11 @@ Our goal is to create an easy-to-use debugging tool that generates useful print 
 - **UI Files:** Dedicated to the VSCode extension's user interface.
 
 ### 🛠️ Set Up
-1. Ensure npm is installed and up-to-date: `npm install`
-2. Compile the extension: `npm run compile`
-3. Launch the Extension Development Host:
-   - For Mac: Press `fn+F5`
-   - For Windows: Press `F5`
-4. Use `cmd+shift+h` (Mac) or `ctrl+alt+h` (Windows) to generate debugging print statements in the code.
+- Basic Steps Involved:
+  - Ensure npm is installed and up-to-date: `npm install`
+  - Compile the extension: `npm run compile`
+  - Launch the Extension Development Host:
+     - For Mac: Press `fn+F5`
+     - For Windows: Press `F5`
+  - Use `cmd+shift+h` (Mac) or `ctrl+alt+h` (Windows) to generate debugging print statements in the code.
+- Note: For more detailed steps for building, compiling and testing the code please refer the "UserManual" and "DeveloperGuidelines" files available in the root directory of the project.
