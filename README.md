@@ -15,7 +15,7 @@ EasyPrint is an innovative tool for software developers, streamlining the debugg
 
 #### Removing Print Statements
 - **Bulk Removal:** Remove all EasyPrint-generated print statements in a file with ease. ✅
-- **Related Instances:** Selectively remove instances of related EasyPrint statements. ✅
+- **Highlighted Instances:** Selectively remove instances of highlighted EasyPrint statements. ✅
 
 #### Adding Comments
 - **Single Line Comments:** Easily add comments to single lines of code. ✅
