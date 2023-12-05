@@ -14,7 +14,8 @@ export class APIController {
         {"role": "system", "content": "You are EasyPrint, the world's best printing plugin."},
         {"role": "user", "content": prompt},
       ],
-      stream: true
+      stream: true,
+      temperature: 0.3
     });
 
     for await (const chunk of stream) {
