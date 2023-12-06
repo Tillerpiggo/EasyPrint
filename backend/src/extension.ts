@@ -49,7 +49,6 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     async function applyEditsFromGenerator(generator: AsyncGenerator<string, void, unknown>, editor: vscode.TextEditor, fullLineRange: vscode.Range): Promise<void> {
-        console.log("applying edits from generator")
         for await (const response of generator) {
             const edit = new vscode.WorkspaceEdit();
         
@@ -75,6 +74,7 @@ export function activate(context: vscode.ExtensionContext) {
         };
     }
     
+    // Then call this function from your command:
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -88,9 +88,8 @@ export function activate(context: vscode.ExtensionContext) {
     
         const editor_document = editor.document;
         let text = editor.document.getText(fullLineRange);
-        let backend = new BackendController(editor_document.fileName, APIKEY);
-        const generator = backend.onHighlight(text);
-        await applyEditsFromGenerator(generator, editor, fullLineRange);
+        let backend = new BackendController(editor_document.fileName, APIKEY)
+        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
     });
     
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', async () => {

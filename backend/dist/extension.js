@@ -71,7 +71,6 @@ function activate(context) {
     }
     async function applyEditsFromGenerator(generator, editor, fullLineRange) {
         var _a, e_1, _b, _c;
-        console.log("applying edits from generator");
         try {
             for (var _d = true, generator_1 = __asyncValues(generator), generator_1_1; generator_1_1 = await generator_1.next(), _a = generator_1_1.done, !_a; _d = true) {
                 _c = generator_1_1.value;
@@ -111,8 +110,7 @@ function activate(context) {
         const editor_document = editor.document;
         let text = editor.document.getText(fullLineRange);
         let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-        const generator = backend.onHighlight(text);
-        await applyEditsFromGenerator(generator, editor, fullLineRange);
+        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
     });
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', async () => {
         const editor = vscode.window.activeTextEditor;
@@ -614,14 +612,14 @@ class PrintStatementGenerator {
     }
     insertResponse(promptType, code, lines, maxTokens = 100) {
         return __asyncGenerator(this, arguments, function* insertResponse_1() {
-            var _a, e_1, _b, _c, _d, e_2, _e, _f;
+            var _a, e_1, _b, _c, _d, e_2, _e, _f, _g, e_3, _h, _j;
             const prompt = this.promptGenerator.generate(promptType, code);
             const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
-            if (promptType == PromptType_1.PromptType.SingleLine || promptType == PromptType_1.PromptType.Comment) {
+            if (promptType == PromptType_1.PromptType.SingleLine) {
                 try {
-                    for (var _g = true, _h = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _j; _j = yield __await(_h.next()), _a = _j.done, !_a; _g = true) {
-                        _c = _j.value;
-                        _g = false;
+                    for (var _k = true, _l = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _m; _m = yield __await(_l.next()), _a = _m.done, !_a; _k = true) {
+                        _c = _m.value;
+                        _k = false;
                         const updatedCode = _c;
                         yield yield __await(updatedCode);
                     }
@@ -629,27 +627,44 @@ class PrintStatementGenerator {
                 catch (e_1_1) { e_1 = { error: e_1_1 }; }
                 finally {
                     try {
-                        if (!_g && !_a && (_b = _h.return)) yield __await(_b.call(_h));
+                        if (!_k && !_a && (_b = _l.return)) yield __await(_b.call(_l));
                     }
                     finally { if (e_1) throw e_1.error; }
                 }
             }
-            else {
-                let apiResponse = '';
+            else if (promptType == PromptType_1.PromptType.Comment) {
                 try {
-                    for (var _k = true, responseGenerator_1 = __asyncValues(responseGenerator), responseGenerator_1_1; responseGenerator_1_1 = yield __await(responseGenerator_1.next()), _d = responseGenerator_1_1.done, !_d; _k = true) {
-                        _f = responseGenerator_1_1.value;
-                        _k = false;
-                        const token = _f;
-                        apiResponse += token;
+                    for (var _o = true, _p = __asyncValues(this.outputParser.processCommentTokens(code, responseGenerator, lines)), _q; _q = yield __await(_p.next()), _d = _q.done, !_d; _o = true) {
+                        _f = _q.value;
+                        _o = false;
+                        const updatedCode = _f;
+                        yield yield __await(updatedCode);
                     }
                 }
                 catch (e_2_1) { e_2 = { error: e_2_1 }; }
                 finally {
                     try {
-                        if (!_k && !_d && (_e = responseGenerator_1.return)) yield __await(_e.call(responseGenerator_1));
+                        if (!_o && !_d && (_e = _p.return)) yield __await(_e.call(_p));
                     }
                     finally { if (e_2) throw e_2.error; }
+                }
+            }
+            else {
+                let apiResponse = '';
+                try {
+                    for (var _r = true, responseGenerator_1 = __asyncValues(responseGenerator), responseGenerator_1_1; responseGenerator_1_1 = yield __await(responseGenerator_1.next()), _g = responseGenerator_1_1.done, !_g; _r = true) {
+                        _j = responseGenerator_1_1.value;
+                        _r = false;
+                        const token = _j;
+                        apiResponse += token;
+                    }
+                }
+                catch (e_3_1) { e_3 = { error: e_3_1 }; }
+                finally {
+                    try {
+                        if (!_r && !_g && (_h = responseGenerator_1.return)) yield __await(_h.call(responseGenerator_1));
+                    }
+                    finally { if (e_3) throw e_3.error; }
                 }
                 yield yield __await(this.outputParser.parse_comments(code, apiResponse, lines));
             }
@@ -10114,6 +10129,8 @@ class OutputParser {
         this.tokensToSkip = 0;
         this.hasAddedCodeInCurrentBlock = false;
         this.currentLine = 0;
+        this.hasAddedTokenToNewLine = false;
+        this.codeLines = [];
     }
     parse(code, response, lines) {
         var _a;
@@ -10157,6 +10174,7 @@ class OutputParser {
         });
     }
     parseToken(code, token, lines) {
+        var _a;
         console.log(`token: ${token}`);
         if (this.tokensToSkip > 0) {
             this.tokensToSkip--;
@@ -10171,16 +10189,20 @@ class OutputParser {
             return code;
         }
         if (this.isInsideCodeBlock) {
+            let indentedToken = token;
+            const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
             if (token == '\n') {
-                this.currentLine++;
+                indentedToken = '\n' + lastLineIndentation;
             }
-            if (lines[this.currentLine] !== undefined) {
-                let indentedToken = ' ' + token;
-                const updatedCode = code.split('\n');
-                updatedCode[lines[this.currentLine] + this.currentLine] += indentedToken;
-                console.log(`updatedCode: ${updatedCode.join('\n')}`);
-                return updatedCode.join('\n');
+            if (!this.hasAddedCodeInCurrentBlock) {
+                console.log("Adding inside current code block!!");
+                indentedToken = '\n' + lastLineIndentation + indentedToken;
+                console.log(`Indented token: ${indentedToken}`);
+                this.hasAddedCodeInCurrentBlock = true;
             }
+            const updatedCode = code + indentedToken;
+            console.log(`updatedCode: ${code}`);
+            return updatedCode;
         }
         return code;
     }
@@ -10209,6 +10231,67 @@ class OutputParser {
         }
         let indentedCode = extractedCode.map(line => indentation + line);
         return indentedCode.join('\n');
+    }
+    processCommentTokens(code, tokenGenerator, lines) {
+        return __asyncGenerator(this, arguments, function* processCommentTokens_1() {
+            var _a, e_2, _b, _c;
+            this.isInsideCodeBlock = false;
+            this.tokensToSkip = 0;
+            this.hasAddedCodeInCurrentBlock = false;
+            this.currentLine = 0;
+            this.codeLines = code.split('\n');
+            try {
+                for (var _d = true, tokenGenerator_2 = __asyncValues(tokenGenerator), tokenGenerator_2_1; tokenGenerator_2_1 = yield __await(tokenGenerator_2.next()), _a = tokenGenerator_2_1.done, !_a; _d = true) {
+                    _c = tokenGenerator_2_1.value;
+                    _d = false;
+                    const token = _c;
+                    code = this.parseCommentToken(code, token, lines);
+                    yield yield __await(code);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = tokenGenerator_2.return)) yield __await(_b.call(tokenGenerator_2));
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        });
+    }
+    parseCommentToken(code, token, lines) {
+        console.log(`token: ${token}`);
+        if (this.tokensToSkip > 0) {
+            this.tokensToSkip--;
+            return code;
+        }
+        if (token.startsWith('```')) {
+            this.isInsideCodeBlock = !this.isInsideCodeBlock;
+            if (this.isInsideCodeBlock) {
+                this.tokensToSkip = 2;
+                this.hasAddedCodeInCurrentBlock = false;
+            }
+            return code;
+        }
+        if (this.isInsideCodeBlock) {
+            let indentedToken = token;
+            if (token == '\n') {
+                this.currentLine++;
+                indentedToken = '\n';
+            }
+            if (!this.hasAddedCodeInCurrentBlock) {
+                console.log("Adding inside current code block!!");
+                indentedToken = '\n' + indentedToken;
+                console.log(`Indented token: ${indentedToken}`);
+                this.hasAddedCodeInCurrentBlock = true;
+            }
+            if (lines.includes(this.currentLine)) {
+                this.codeLines.splice(this.currentLine, 0, indentedToken.trim());
+                code = this.codeLines.join('\n');
+                console.log(`updatedCode: ${code}`);
+            }
+            return code;
+        }
+        return code;
     }
 }
 exports.OutputParser = OutputParser;

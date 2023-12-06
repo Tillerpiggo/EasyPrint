@@ -4,6 +4,8 @@ export class OutputParser {
     private hasAddedCodeInCurrentBlock: boolean;
     private tokensToSkip: number;
     private currentLine: number;
+    private hasAddedTokenToNewLine: boolean;
+    private codeLines: string[];
     
     constructor(fileType: string) {  
       this.fileType = fileType;
@@ -11,6 +13,8 @@ export class OutputParser {
       this.tokensToSkip = 0;
       this.hasAddedCodeInCurrentBlock = false;
       this.currentLine = 0;
+      this.hasAddedTokenToNewLine = false
+      this.codeLines = []
     }
 
     parse(code: string, response: string, lines: number[]): string {
@@ -56,36 +60,55 @@ export class OutputParser {
   parseToken(code: string, token: string, lines: number[]): string {
     console.log(`token: ${token}`);
   
+    // If we're skipping tokens, decrement the counter and return the current code
     if (this.tokensToSkip > 0) {
-      this.tokensToSkip--;
-      return code;
+        this.tokensToSkip--;
+        return code;
     }
-  
+
+    // If the token signifies the start of a code block, set the flag to true
     if (token.startsWith('```')) {
-      this.isInsideCodeBlock = !this.isInsideCodeBlock;
-      if (this.isInsideCodeBlock) {
-        this.tokensToSkip = 2;
-        this.hasAddedCodeInCurrentBlock = false;
-      }
-      return code;
+        this.isInsideCodeBlock = !this.isInsideCodeBlock;
+
+        // If we're entering a code block, prepare to skip the next two tokens
+        // and reset the flag for added code in current block
+        if (this.isInsideCodeBlock) {
+            this.tokensToSkip = 2;
+            this.hasAddedCodeInCurrentBlock = false;
+        }
+
+        // Ignore the code block start token
+        return code;
     }
-  
+
+    // If we're inside a code block, insert the token into the code
     if (this.isInsideCodeBlock) {
-      if (token == '\n') { // When a newline is encountered, the line to be inserted will be updated
-        this.currentLine++;
-      }
-  
-      // If the currentLine is present in the lines array, we append the token
-      if (lines[this.currentLine] !== undefined) {
-        let indentedToken = ' ' + token; // Prepare the token for appending
-        const updatedCode = code.split('\n');
-  
-        // Append the token at the end of the appropriate line
-        updatedCode[lines[this.currentLine] + this.currentLine] += indentedToken;
-        console.log(`updatedCode: ${updatedCode.join('\n')}`);
-        return updatedCode.join('\n');
-      }
+        let indentedToken = token;
+
+        const lastLineIndentation = (code.match(/.*\S.*$/mg) || []).pop()?.match(/^\s*/) || '';
+
+        if (token == '\n') {
+            // Find the indentation of the last non-empty line
+            // Add indentation to the token
+            indentedToken = '\n' + lastLineIndentation;
+        }
+
+        // If this is the first piece of code in the current block, prepend a newline to it
+        if (!this.hasAddedCodeInCurrentBlock) {
+        console.log("Adding inside current code block!!")
+        indentedToken = '\n' + lastLineIndentation + indentedToken;
+        console.log(`Indented token: ${indentedToken}`)
+        this.hasAddedCodeInCurrentBlock = true;
+        }
+
+        // Append the indented token to the code
+        const updatedCode = code + indentedToken;
+        console.log(`updatedCode: ${code}`)
+        return updatedCode;
     }
+
+    // If we're not inside a code block, return the original code
+
     return code;
   }
 
@@ -122,6 +145,64 @@ export class OutputParser {
     // Add back our indentation
     let indentedCode = extractedCode.map(line => indentation + line);
     return indentedCode.join('\n');
+  }
+
+  // Function to process tokens for comments
+async *processCommentTokens(code: string, tokenGenerator: AsyncGenerator<string, void, unknown>, lines: number[]): AsyncGenerator<string, void, unknown> {
+    this.isInsideCodeBlock = false;
+    this.tokensToSkip = 0;
+    this.hasAddedCodeInCurrentBlock = false;
+    this.currentLine = 0;
+    this.codeLines = code.split('\n');
+    for await (const token of tokenGenerator) {
+      code = this.parseCommentToken(code, token, lines);
+      yield code;
+    }
+  }
+  
+  // Function to parse tokens for comments
+  parseCommentToken(code: string, token: string, lines: number[]): string {
+    console.log(`token: ${token}`);
+  
+    if (this.tokensToSkip > 0) {
+      this.tokensToSkip--;
+      return code;
+    }
+  
+    if (token.startsWith('```')) {
+      this.isInsideCodeBlock = !this.isInsideCodeBlock;
+      if (this.isInsideCodeBlock) {
+        this.tokensToSkip = 2;
+        this.hasAddedCodeInCurrentBlock = false;
+      }
+      return code;
+    }
+  
+    if (this.isInsideCodeBlock) {
+      let indentedToken = token;
+  
+      if (token == '\n') {
+        this.currentLine++;
+        indentedToken = '\n';
+      }
+  
+      if (!this.hasAddedCodeInCurrentBlock) {
+        console.log("Adding inside current code block!!")
+        indentedToken = '\n' + indentedToken;
+        console.log(`Indented token: ${indentedToken}`)
+        this.hasAddedCodeInCurrentBlock = true;
+      }
+  
+      if(lines.includes(this.currentLine)) {
+        this.codeLines.splice(this.currentLine, 0, indentedToken.trim());
+        code = this.codeLines.join('\n');
+        console.log(`updatedCode: ${code}`)
+      }
+  
+      return code;
+    }
+  
+    return code;
   }
 
 }

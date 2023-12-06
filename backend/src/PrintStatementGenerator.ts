@@ -17,8 +17,12 @@ export class PrintStatementGenerator {
     const prompt = this.promptGenerator.generate(promptType, code);
     const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
     
-    if (promptType == PromptType.SingleLine || promptType == PromptType.Comment) {
+    if (promptType == PromptType.SingleLine) {
       for await (const updatedCode of this.outputParser.processTokens(code, responseGenerator, lines)) {
+        yield updatedCode;
+      }
+    } else if (promptType == PromptType.Comment) {
+      for await (const updatedCode of this.outputParser.processCommentTokens(code, responseGenerator, lines)) {
         yield updatedCode;
       }
     } else {
@@ -29,6 +33,7 @@ export class PrintStatementGenerator {
       yield this.outputParser.parse_comments(code, apiResponse, lines);
     }
   }
+
   
   // async *insertComments(promptType: PromptType, code: string, lines: number[], maxTokens: number = 100): AsyncGenerator<string, void, unknown> {
   //   const prompt = this.promptGenerator.generate(promptType, code);
