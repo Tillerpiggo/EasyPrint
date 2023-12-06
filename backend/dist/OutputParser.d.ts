@@ -3,6 +3,7 @@ export declare class OutputParser {
     private isInsideCodeBlock;
     private hasAddedCodeInCurrentBlock;
     private tokensToSkip;
+    private currentLine;
     constructor(fileType: string);
     parse(code: string, response: string, lines: number[]): string;
     processTokens(code: string, tokenGenerator: AsyncGenerator<string, void, unknown>, lines: number[]): AsyncGenerator<string, void, unknown>;

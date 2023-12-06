@@ -40,9 +40,10 @@ export class PromptGenerator {
         prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
         break;
       case PromptType.Comment: 
-        prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment 
-                  format rather than just text and add meaningful comments on the next line throughout the code if multiple lines or a single comment if only one line. If code is already thoroughly 
-                  commented just return the same code and comments that were passed`;
+        prompt = "Follow these instructions TO THE LETTER: Literally just respond with 3 random java comments, each on their own line, in a code block."
+        // prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment 
+        //           format rather than just text and add meaningful comments on the next line throughout the code if multiple lines or a single comment if only one line. If code is already thoroughly 
+        //           commented just return the same code and comments that were passed`;
         break;
       case PromptType.Combinational:
         prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". 

@@ -49,6 +49,7 @@ export function activate(context: vscode.ExtensionContext) {
     }
 
     async function applyEditsFromGenerator(generator: AsyncGenerator<string, void, unknown>, editor: vscode.TextEditor, fullLineRange: vscode.Range): Promise<void> {
+        console.log("applying edits from generator")
         for await (const response of generator) {
             const edit = new vscode.WorkspaceEdit();
         
@@ -74,7 +75,6 @@ export function activate(context: vscode.ExtensionContext) {
         };
     }
     
-    // Then call this function from your command:
     let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -88,8 +88,27 @@ export function activate(context: vscode.ExtensionContext) {
     
         const editor_document = editor.document;
         let text = editor.document.getText(fullLineRange);
-        let backend = new BackendController(editor_document.fileName, APIKEY)
-        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
+        let backend = new BackendController(editor_document.fileName, APIKEY);
+        const generator = backend.onHighlight(text);
+        await applyEditsFromGenerator(generator, editor, fullLineRange);
+    });
+    
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return; // Guard: if there's no active editor, exit early
+        }
+    
+        const fullLineRange = getFullLineRange(editor);
+        if (!fullLineRange) {
+            return; // Guard: if the full line range could not be calculated, exit early
+        }
+    
+        const editor_document = editor.document;
+        let text = editor.document.getText(fullLineRange);
+        let backend = new BackendController(editor_document.fileName, APIKEY);
+        const generator = backend.onHighlightComment(text);
+        await applyEditsFromGenerator(generator, editor, fullLineRange);
     });
 
     // Do not update tree when changing the position of cursor.
@@ -130,37 +149,6 @@ export function activate(context: vscode.ExtensionContext) {
         else {
             highlightScope();
         }
-    });
-
-    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
-        const editor = vscode.window.activeTextEditor;
-
-        if (!editor) {
-            return;
-        }
-    
-        const fullLineRange = getFullLineRange(editor);
-            
-        if (!fullLineRange) {
-            return;
-        }
-
-        const editor_document = editor.document;
-        
-        // Send request to backend with request for comment
-        let backend = new BackendController(editor_document.fileName, APIKEY)
-        backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
-        
-            // Create a new edit to replace the selected text
-            const edit = new vscode.WorkspaceEdit();
-            edit.replace(editor.document.uri, fullLineRange, response);
-        
-            // Apply the edit
-            vscode.workspace.applyEdit(edit);
-        
-            // Optionally, display a message
-            vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
-        });
     });
 
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {    

@@ -25,9 +25,10 @@ export class BackendController {
         console.log(promptType)
         // Insert at the end of the code
         const linesOfCode = code.split('\n');
-        const insertionLines = [linesOfCode.length];
+        //const insertionLines = [linesOfCode.length];
+        const insertionLines = [0, 2, 3]
         
-        const printStatementGenerator = this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+        const printStatementGenerator = this.printStatementGenerator.insertResponse(promptType, code, insertionLines);
         
         for await (const updatedCode of printStatementGenerator) {
             yield updatedCode;
@@ -54,16 +55,17 @@ export class BackendController {
         return ranges;
     }
 
-    // Commenting
-    async onHighlightComment(code: string): Promise<string> {
-        const promptType = PromptType.Comment;
-
+    // Inserts comments
+    async *onHighlightComment(code: string): AsyncGenerator<string, void, unknown> {
         // We will add to the first line (above code we want to comment)
         const endingLine = code.split('\n');
         const insertionLines = [endingLine.length];
-
-        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
-        return codeWithComment;
+    
+        const commentGenerator = this.commentGenerator.insertResponse(PromptType.Comment, code, insertionLines);
+        
+        for await (const codeWithComment of commentGenerator) {
+            yield codeWithComment;
+        }
     }
     
     // Deleting

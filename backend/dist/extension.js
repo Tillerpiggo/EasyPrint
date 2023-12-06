@@ -71,6 +71,7 @@ function activate(context) {
     }
     async function applyEditsFromGenerator(generator, editor, fullLineRange) {
         var _a, e_1, _b, _c;
+        console.log("applying edits from generator");
         try {
             for (var _d = true, generator_1 = __asyncValues(generator), generator_1_1; generator_1_1 = await generator_1.next(), _a = generator_1_1.done, !_a; _d = true) {
                 _c = generator_1_1.value;
@@ -110,7 +111,23 @@ function activate(context) {
         const editor_document = editor.document;
         let text = editor.document.getText(fullLineRange);
         let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
+        const generator = backend.onHighlight(text);
+        await applyEditsFromGenerator(generator, editor, fullLineRange);
+    });
+    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        const fullLineRange = getFullLineRange(editor);
+        if (!fullLineRange) {
+            return;
+        }
+        const editor_document = editor.document;
+        let text = editor.document.getText(fullLineRange);
+        let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+        const generator = backend.onHighlightComment(text);
+        await applyEditsFromGenerator(generator, editor, fullLineRange);
     });
     vscode.window.onDidChangeTextEditorSelection(() => {
         if (highlightMode) {
@@ -147,23 +164,6 @@ function activate(context) {
         }
         else {
             highlightScope();
-        }
-    });
-    let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            const fullLineRange = getFullLineRange(editor);
-            if (!fullLineRange) {
-                return;
-            }
-            const editor_document = editor.document;
-            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
-                const edit = new vscode.WorkspaceEdit();
-                edit.replace(editor.document.uri, fullLineRange, response);
-                vscode.workspace.applyEdit(edit);
-                vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
-            });
         }
     });
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
@@ -287,8 +287,8 @@ class BackendController {
             const promptType = inputParser.determinePromptType(code);
             console.log(promptType);
             const linesOfCode = code.split('\n');
-            const insertionLines = [linesOfCode.length];
-            const printStatementGenerator = this.printStatementGenerator.insertPrintStatements(promptType, code, insertionLines);
+            const insertionLines = [0, 2, 3];
+            const printStatementGenerator = this.printStatementGenerator.insertResponse(promptType, code, insertionLines);
             try {
                 for (var _d = true, printStatementGenerator_1 = __asyncValues(printStatementGenerator), printStatementGenerator_1_1; printStatementGenerator_1_1 = yield __await(printStatementGenerator_1.next()), _a = printStatementGenerator_1_1.done, !_a; _d = true) {
                     _c = printStatementGenerator_1_1.value;
@@ -322,12 +322,28 @@ class BackendController {
         }
         return ranges;
     }
-    async onHighlightComment(code) {
-        const promptType = PromptType_1.PromptType.Comment;
-        const endingLine = code.split('\n');
-        const insertionLines = [endingLine.length];
-        const codeWithComment = await this.commentGenerator.insertComments(promptType, code, insertionLines);
-        return codeWithComment;
+    onHighlightComment(code) {
+        return __asyncGenerator(this, arguments, function* onHighlightComment_1() {
+            var _a, e_2, _b, _c;
+            const endingLine = code.split('\n');
+            const insertionLines = [endingLine.length];
+            const commentGenerator = this.commentGenerator.insertResponse(PromptType_1.PromptType.Comment, code, insertionLines);
+            try {
+                for (var _d = true, commentGenerator_1 = __asyncValues(commentGenerator), commentGenerator_1_1; commentGenerator_1_1 = yield __await(commentGenerator_1.next()), _a = commentGenerator_1_1.done, !_a; _d = true) {
+                    _c = commentGenerator_1_1.value;
+                    _d = false;
+                    const codeWithComment = _c;
+                    yield yield __await(codeWithComment);
+                }
+            }
+            catch (e_2_1) { e_2 = { error: e_2_1 }; }
+            finally {
+                try {
+                    if (!_d && !_a && (_b = commentGenerator_1.return)) yield __await(_b.call(commentGenerator_1));
+                }
+                finally { if (e_2) throw e_2.error; }
+            }
+        });
     }
     deleteComments() {
         return this.codeParser.findEasyPrintLines();
@@ -596,12 +612,12 @@ class PrintStatementGenerator {
         this.apiController = new APIController_1.APIController(apiKey);
         this.outputParser = new OutputParser_1.OutputParser(fileType);
     }
-    insertPrintStatements(promptType, code, lines, maxTokens = 100) {
-        return __asyncGenerator(this, arguments, function* insertPrintStatements_1() {
+    insertResponse(promptType, code, lines, maxTokens = 100) {
+        return __asyncGenerator(this, arguments, function* insertResponse_1() {
             var _a, e_1, _b, _c, _d, e_2, _e, _f;
             const prompt = this.promptGenerator.generate(promptType, code);
             const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
-            if (promptType == PromptType_1.PromptType.SingleLine) {
+            if (promptType == PromptType_1.PromptType.SingleLine || promptType == PromptType_1.PromptType.Comment) {
                 try {
                     for (var _g = true, _h = __asyncValues(this.outputParser.processTokens(code, responseGenerator, lines)), _j; _j = yield __await(_h.next()), _a = _j.done, !_a; _g = true) {
                         _c = _j.value;
@@ -638,29 +654,6 @@ class PrintStatementGenerator {
                 yield yield __await(this.outputParser.parse_comments(code, apiResponse, lines));
             }
         });
-    }
-    async insertComments(promptType, code, lines, maxTokens = 100) {
-        var _a, e_3, _b, _c;
-        const prompt = this.promptGenerator.generate(promptType, code);
-        const responseGenerator = this.apiController.generateResponse(prompt, maxTokens);
-        let apiResponse = '';
-        try {
-            for (var _d = true, responseGenerator_2 = __asyncValues(responseGenerator), responseGenerator_2_1; responseGenerator_2_1 = await responseGenerator_2.next(), _a = responseGenerator_2_1.done, !_a; _d = true) {
-                _c = responseGenerator_2_1.value;
-                _d = false;
-                const token = _c;
-                apiResponse += token;
-            }
-        }
-        catch (e_3_1) { e_3 = { error: e_3_1 }; }
-        finally {
-            try {
-                if (!_d && !_a && (_b = responseGenerator_2.return)) await _b.call(responseGenerator_2);
-            }
-            finally { if (e_3) throw e_3.error; }
-        }
-        const parsedResponse = this.outputParser.parse_comments(code, apiResponse, lines);
-        return parsedResponse;
     }
 }
 exports.PrintStatementGenerator = PrintStatementGenerator;
@@ -727,9 +720,7 @@ class PromptGenerator {
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
             case PromptType_1.PromptType.Comment:
-                prompt = `Add comments explaining this code: "${code}". The comments should only describe functionality, not implementation details. Ensure that the comments are suitable comment 
-                  format rather than just text and add meaningful comments on the next line throughout the code if multiple lines or a single comment if only one line. If code is already thoroughly 
-                  commented just return the same code and comments that were passed`;
+                prompt = "Follow these instructions TO THE LETTER: Literally just respond with 3 random java comments, each on their own line, in a code block.";
                 break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". 
@@ -10122,6 +10113,7 @@ class OutputParser {
         this.isInsideCodeBlock = false;
         this.tokensToSkip = 0;
         this.hasAddedCodeInCurrentBlock = false;
+        this.currentLine = 0;
     }
     parse(code, response, lines) {
         var _a;
@@ -10165,7 +10157,6 @@ class OutputParser {
         });
     }
     parseToken(code, token, lines) {
-        var _a;
         console.log(`token: ${token}`);
         if (this.tokensToSkip > 0) {
             this.tokensToSkip--;
@@ -10180,20 +10171,16 @@ class OutputParser {
             return code;
         }
         if (this.isInsideCodeBlock) {
-            let indentedToken = token;
-            const lastLineIndentation = ((_a = (code.match(/.*\S.*$/mg) || []).pop()) === null || _a === void 0 ? void 0 : _a.match(/^\s*/)) || '';
             if (token == '\n') {
-                indentedToken = '\n' + lastLineIndentation;
+                this.currentLine++;
             }
-            if (!this.hasAddedCodeInCurrentBlock) {
-                console.log("Adding inside current code block!!");
-                indentedToken = '\n' + lastLineIndentation + indentedToken;
-                console.log(`Indented token: ${indentedToken}`);
-                this.hasAddedCodeInCurrentBlock = true;
+            if (lines[this.currentLine] !== undefined) {
+                let indentedToken = ' ' + token;
+                const updatedCode = code.split('\n');
+                updatedCode[lines[this.currentLine] + this.currentLine] += indentedToken;
+                console.log(`updatedCode: ${updatedCode.join('\n')}`);
+                return updatedCode.join('\n');
             }
-            const updatedCode = code + indentedToken;
-            console.log(`updatedCode: ${code}`);
-            return updatedCode;
         }
         return code;
     }
