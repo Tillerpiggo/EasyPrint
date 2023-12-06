@@ -11,31 +11,6 @@ let decorationType = vscode.window.createTextEditorDecorationType({
 });
 let highlightMode = false;
 
-// HTML for the spinning/loading symbol
-const loadingSymbol = `
-    <html>
-    <head>
-        <style>
-            .spinner {
-                border: 4px solid rgba(0, 0, 0, 0.1);
-                border-radius: 50%;
-                border-top: 4px solid #3498db;
-                width: 20px;
-                height: 20px;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="spinner"></div>
-    </body>
-    </html>
-`;
-
 function highlightScope() {
     activeEditor.setDecorations(decorationType, []);
     const position = activeEditor.selection.active;
@@ -107,43 +82,6 @@ export function activate(context: vscode.ExtensionContext) {
         
                 vscode.window.showInformationMessage(response)
             };
-        
-            console.log("dummy dummy");
-            const promptType = inputParser.determinePromptType(text)
-            /*
-            // send the text to the backend controller
-            let backend = new BackendController(editor_document.fileName, APIKEY)
-            const startLine = selected.start;
-            const endLine = selected.end;
-            
-            if (startLine.isBefore(endLine)){
-                changeable = true
-            }else{
-                changeable = false
-            }
-            const range = new vscode.Range(startLine, endLine);
-            const edit = new vscode.WorkspaceEdit();
-            if(changeable){
-            backend.onHighlight(text).then(response => {
-                edit.replace(editor.document.uri, range, response)
-                vscode.workspace.applyEdit(edit)
-                vscode.window.showInformationMessage(response)
-            });
-            */
-            // const statement = text.split(/\s+/);
-            // let i = 0;
-
-            // function printTokenByToken() {
-            //     if (i < statement.length) {
-            //         edit.replace(editor.document.uri, range, statement[i]);
-            //         i++;
-            //         setTimeout(printTokenByToken, 500);
-            //     } else {
-            //         vscode.workspace.applyEdit(edit);
-            //         vscode.window.showInformationMessage('printed word by word');
-            //     }
-            // }
-            // printTokenByToken();
 
         }
     });
@@ -200,11 +138,16 @@ export function activate(context: vscode.ExtensionContext) {
             
             const start = selected.start;
             const end = selected.end;
+
+            let fullLineRange = new vscode.Range(
+                start.line, 0,
+                end.line, editor.document.lineAt(end.line).range.end.character
+            );
             // Get the range of the selected text
             if (start.isBefore(end)){
             const range = new vscode.Range(start, end);
         
-            backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+            backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
                 //console.log(response);
         
                 // Create a new edit to replace the selected text

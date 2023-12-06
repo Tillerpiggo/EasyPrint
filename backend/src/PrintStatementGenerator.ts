@@ -26,7 +26,7 @@ export class PrintStatementGenerator {
       for await (const token of responseGenerator) {
         apiResponse += token;
       }
-      yield this.outputParser.parse_comments(apiResponse, lines);
+      yield this.outputParser.parse_comments(code, apiResponse, lines);
     }
   }
   
@@ -39,7 +39,7 @@ export class PrintStatementGenerator {
       apiResponse += token;
     }
     
-    const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+    const parsedResponse = this.outputParser.parse_comments(code, apiResponse, lines);
 
     return parsedResponse
   }

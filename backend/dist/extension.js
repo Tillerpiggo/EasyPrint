@@ -47,29 +47,6 @@ let decorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: 'purple'
 });
 let highlightMode = false;
-const loadingSymbol = `
-    <html>
-    <head>
-        <style>
-            .spinner {
-                border: 4px solid rgba(0, 0, 0, 0.1);
-                border-radius: 50%;
-                border-top: 4px solid #3498db;
-                width: 20px;
-                height: 20px;
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        </style>
-    </head>
-    <body>
-        <div class="spinner"></div>
-    </body>
-    </html>
-`;
 function highlightScope() {
     activeEditor.setDecorations(decorationType, []);
     const position = activeEditor.selection.active;
@@ -123,12 +100,9 @@ function activate(context) {
                 finally { if (e_1) throw e_1.error; }
             }
             ;
-            console.log("dummy dummy");
-            const promptType = inputParser.determinePromptType(text);
         }
     });
     vscode.window.onDidChangeTextEditorSelection(() => {
-        console.log("Not Building Tree");
         if (highlightMode) {
             highlightScope();
         }
@@ -137,7 +111,6 @@ function activate(context) {
         }
     }, null, context.subscriptions);
     vscode.workspace.onDidChangeTextDocument(async () => {
-        console.log("Building Tree");
         activeEditor = vscode.window.activeTextEditor;
         if (activeEditor) {
             const editor_document = activeEditor.document;
@@ -154,7 +127,6 @@ function activate(context) {
     let keybindingHover = vscode.commands.registerCommand('easyprint.keybindingHover', async () => {
         highlightMode = !highlightMode;
         if (highlightMode) {
-            console.log("Building Tree");
             activeEditor = vscode.window.activeTextEditor;
             if (activeEditor) {
                 const editor_document = activeEditor.document;
@@ -175,9 +147,10 @@ function activate(context) {
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
             const start = selected.start;
             const end = selected.end;
+            let fullLineRange = new vscode.Range(start.line, 0, end.line, editor.document.lineAt(end.line).range.end.character);
             if (start.isBefore(end)) {
                 const range = new vscode.Range(start, end);
-                backend.onHighlightComment(editor_document.getText(selected)).then(response => {
+                backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
                     const edit = new vscode.WorkspaceEdit();
                     edit.replace(editor.document.uri, range, response);
                     vscode.workspace.applyEdit(edit);
@@ -580,7 +553,7 @@ var Module=void 0!==Module?Module:{},TreeSitter=function(){var initPromise,docum
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -655,7 +628,7 @@ class PrintStatementGenerator {
                     }
                     finally { if (e_2) throw e_2.error; }
                 }
-                yield yield __await(this.outputParser.parse_comments(apiResponse, lines));
+                yield yield __await(this.outputParser.parse_comments(code, apiResponse, lines));
             }
         });
     }
@@ -679,7 +652,7 @@ class PrintStatementGenerator {
             }
             finally { if (e_3) throw e_3.error; }
         }
-        const parsedResponse = this.outputParser.parse_comments(apiResponse, lines);
+        const parsedResponse = this.outputParser.parse_comments(code, apiResponse, lines);
         return parsedResponse;
     }
 }
@@ -719,6 +692,18 @@ class PromptGenerator {
         this.customInstructions = ` Only respond with code in ${fileType} and no extra characters. and add the comment " Added by EasyPrint" on the same line after each print statement`;
     }
     generate(promptType, code) {
+        let codeLines = code.split('\n');
+        let firstNonEmptyLine = codeLines.find(line => line.trim().length > 0);
+        let indentation = (firstNonEmptyLine === null || firstNonEmptyLine === void 0 ? void 0 : firstNonEmptyLine.match(/^\s*/)) || '';
+        console.log(`removing indentation: |${indentation}|`);
+        if (indentation[0]) {
+            codeLines = codeLines.map(line => {
+                if (line.startsWith(indentation[0])) {
+                    return line.substring(indentation[0].length);
+                }
+                return line;
+            });
+        }
         let prompt = '';
         switch (promptType) {
             case PromptType_1.PromptType.SingleLine:
@@ -802,7 +787,8 @@ class APIController {
                     { "role": "system", "content": "You are EasyPrint, the world's best printing plugin." },
                     { "role": "user", "content": prompt },
                 ],
-                stream: true
+                stream: true,
+                temperature: 0.3
             }));
             try {
                 for (var _d = true, stream_1 = __asyncValues(stream), stream_1_1; stream_1_1 = yield __await(stream_1.next()), _a = stream_1_1.done, !_a; _d = true) {
@@ -10097,7 +10083,7 @@ exports.Moderations = Moderations;
 
 
 /***/ }),
-/* 93 */
+/* 94 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -10204,7 +10190,10 @@ class OutputParser {
         }
         return code;
     }
-    parse_comments(apiResponse, lines) {
+    parse_comments(code, apiResponse, lines) {
+        let codeLines = code.split('\n');
+        let firstNonEmptyLine = codeLines.find(line => line.trim().length > 0);
+        let indentation = (firstNonEmptyLine === null || firstNonEmptyLine === void 0 ? void 0 : firstNonEmptyLine.match(/^\s*/)) || '';
         let responseLines = apiResponse.split('\n');
         let inCodeBlock = false;
         let extractedCode = responseLines.filter(line => {
@@ -10214,7 +10203,18 @@ class OutputParser {
             }
             return inCodeBlock;
         });
-        return extractedCode.join('\n');
+        let firstNonEmptyResponseLine = extractedCode.find(line => line.trim().length > 0);
+        let unwantedIndentation = (firstNonEmptyResponseLine === null || firstNonEmptyResponseLine === void 0 ? void 0 : firstNonEmptyResponseLine.match(/^\s*/)) || '';
+        if (unwantedIndentation[0]) {
+            extractedCode = extractedCode.map(line => {
+                if (line.startsWith(unwantedIndentation[0])) {
+                    return line.substring(unwantedIndentation[0].length);
+                }
+                return line;
+            });
+        }
+        let indentedCode = extractedCode.map(line => indentation + line);
+        return indentedCode.join('\n');
     }
 }
 exports.OutputParser = OutputParser;
