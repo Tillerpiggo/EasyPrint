@@ -148,63 +148,80 @@ export class OutputParser {
   }
 
   // Function to process tokens for comments
-async *processCommentTokens(code: string, tokenGenerator: AsyncGenerator<string, void, unknown>, lines: number[]): AsyncGenerator<string, void, unknown> {
+  async *processCommentTokens(code: string, tokenGenerator: AsyncGenerator<string, void, unknown>, lines: number[]): AsyncGenerator<string, void, unknown> {
     this.isInsideCodeBlock = false;
     this.tokensToSkip = 0;
     this.hasAddedCodeInCurrentBlock = false;
     this.currentLine = 0;
+    code = this.insertEmptyCommentLines(code, lines);
     this.codeLines = code.split('\n');
+    lines.sort((a, b) => a - b);
     for await (const token of tokenGenerator) {
       code = this.parseCommentToken(code, token, lines);
       yield code;
     }
   }
   
-// Function to parse tokens for comments
-parseCommentToken(code: string, token: string, lines: number[]): string {
-  console.log(`comment token: ${token}`);
+  // Function to parse tokens for comments
+  parseCommentToken(code: string, token: string, lines: number[]): string {
+    console.log(`comment token: ${token}`);
 
-  if (this.tokensToSkip > 0) {
-    this.tokensToSkip--;
-    return code;
-  }
+    if (this.tokensToSkip > 0) {
+      this.tokensToSkip--;
+      return code;
+    }
 
-  if (token.startsWith('```')) {
-    this.isInsideCodeBlock = !this.isInsideCodeBlock;
+    if (token.startsWith('```')) {
+      this.isInsideCodeBlock = !this.isInsideCodeBlock;
+      if (this.isInsideCodeBlock) {
+        this.tokensToSkip = 2;
+        this.hasAddedCodeInCurrentBlock = false;
+      }
+      return code;
+    }
+
     if (this.isInsideCodeBlock) {
-      this.tokensToSkip = 2;
-      this.hasAddedCodeInCurrentBlock = false;
+      let indentedToken = token;
+
+      if (token == '\n') {
+        this.currentLine++;
+        indentedToken = '\n';
+        return this.codeLines.join('\n')
+      }
+
+      if (!this.hasAddedCodeInCurrentBlock) {
+        console.log("Adding inside current code block!!")
+        indentedToken = indentedToken; // Append space before token for readability
+        console.log(`Indented token: ${indentedToken}`)
+        this.hasAddedCodeInCurrentBlock = true;
+      }
+      console.log(`lines: ${lines}`)
+
+      let line = lines[this.currentLine] + this.currentLine
+      console.log(`Before modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
+      this.codeLines[line] += indentedToken;  // Append token to the existing line
+      code = this.codeLines.join('\n');
+      console.log(`After modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
+
+      return code;
     }
-    return code;
-  }
-
-  if (this.isInsideCodeBlock) {
-    let indentedToken = token;
-
-    if (token == '\n') {
-      this.currentLine++;
-      indentedToken = '\n';
-      return this.codeLines.join('\n')
-    }
-
-    if (!this.hasAddedCodeInCurrentBlock) {
-      console.log("Adding inside current code block!!")
-      indentedToken = indentedToken; // Append space before token for readability
-      console.log(`Indented token: ${indentedToken}`)
-      this.hasAddedCodeInCurrentBlock = true;
-    }
-    console.log(`lines: ${lines}`)
-
-    let line = lines[this.currentLine]
-    console.log(`Before modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
-    this.codeLines[line] += indentedToken;  // Append token to the existing line
-    code = this.codeLines.join('\n');
-    console.log(`After modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
 
     return code;
   }
 
-  return code;
-}
+  // Function to insert empty lines at specified line numbers
+  insertEmptyCommentLines(code: string, lines: number[]): string {
+    let codeLines = code.split('\n');
+
+    // Sort lines in descending order so that inserting doesn't affect line numbers
+    lines.sort((a, b) => b - a);
+
+    for (const line of lines) {
+      // Insert an empty line at the specified line number
+      codeLines.splice(line, 0, "");
+    }
+
+    return codeLines.join('\n');
+  }
 
 }

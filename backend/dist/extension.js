@@ -10239,7 +10239,9 @@ class OutputParser {
             this.tokensToSkip = 0;
             this.hasAddedCodeInCurrentBlock = false;
             this.currentLine = 0;
+            code = this.insertEmptyLines(code, lines);
             this.codeLines = code.split('\n');
+            lines.sort((a, b) => a - b);
             try {
                 for (var _d = true, tokenGenerator_2 = __asyncValues(tokenGenerator), tokenGenerator_2_1; tokenGenerator_2_1 = yield __await(tokenGenerator_2.next()), _a = tokenGenerator_2_1.done, !_a; _d = true) {
                     _c = tokenGenerator_2_1.value;
@@ -10286,7 +10288,7 @@ class OutputParser {
                 this.hasAddedCodeInCurrentBlock = true;
             }
             console.log(`lines: ${lines}`);
-            let line = lines[this.currentLine];
+            let line = lines[this.currentLine] + this.currentLine;
             console.log(`Before modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
             this.codeLines[line] += indentedToken;
             code = this.codeLines.join('\n');
@@ -10294,6 +10296,14 @@ class OutputParser {
             return code;
         }
         return code;
+    }
+    insertEmptyLines(code, lines) {
+        let codeLines = code.split('\n');
+        lines.sort((a, b) => b - a);
+        for (const line of lines) {
+            codeLines.splice(line, 0, "");
+        }
+        return codeLines.join('\n');
     }
 }
 exports.OutputParser = OutputParser;

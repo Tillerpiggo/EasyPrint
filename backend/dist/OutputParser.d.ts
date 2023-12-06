@@ -13,4 +13,5 @@ export declare class OutputParser {
     parse_comments(code: string, apiResponse: string, lines: number[]): string;
     processCommentTokens(code: string, tokenGenerator: AsyncGenerator<string, void, unknown>, lines: number[]): AsyncGenerator<string, void, unknown>;
     parseCommentToken(code: string, token: string, lines: number[]): string;
+    insertEmptyLines(code: string, lines: number[]): string;
 }
