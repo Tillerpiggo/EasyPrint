@@ -4,18 +4,15 @@ import { PrintStatementGenerator } from './PrintStatementGenerator';
 import { PromptType } from './PromptType';
 import * as vscode from 'vscode';
 import {InputParser} from './InputParser'
-//import { CodeModifier } from './CodeModifier';
 
 export class BackendController {
     private codeParser: FileParser;
     private printStatementGenerator: PrintStatementGenerator;
-    //private codeModifier: CodeModifier;
     private commentGenerator: PrintStatementGenerator;
 
     constructor(filePath: string, apiKey: string) {
         this.codeParser = new CodeParser(filePath);
         this.printStatementGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
-        //this.codeModifier = new CodeModifier();
         this.commentGenerator = new PrintStatementGenerator(apiKey, this.codeParser.fileType);
     }
 
