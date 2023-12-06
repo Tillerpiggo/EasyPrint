@@ -31,58 +31,65 @@ export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "easyprint" is now active!');
 
     let changeable = false
-	let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
-        const editor = vscode.window.activeTextEditor;
+
+    function getFullLineRange(editor: vscode.TextEditor): vscode.Range | null {
+        const selected = editor.selection;
+        let startLine = selected.start.line;
+        let endLine = selected.end.line;
+    
+        if (!selected.start.isBefore(selected.end)) {
+            return null;
+        }
+    
+        // Create a new range that includes the entire lines
+        return new vscode.Range(
+            startLine, 0,
+            endLine, editor.document.lineAt(endLine).range.end.character
+        );
+    }
+
+    async function applyEditsFromGenerator(generator: AsyncGenerator<string, void, unknown>, editor: vscode.TextEditor, fullLineRange: vscode.Range): Promise<void> {
+        for await (const response of generator) {
+            const edit = new vscode.WorkspaceEdit();
         
-
-        if (editor) {
-            const inputParser = new InputParser()
-            
-            const selected = editor.selection;
-            // get line numbers of start and end of the selection
-            let startLine = selected.start.line;
-            let endLine = selected.end.line;
-
-            if (!selected.start.isBefore(selected.end)) {
-                return;
+            // Replace the full lines with the response
+            edit.replace(editor.document.uri, fullLineRange, response)
+            await vscode.workspace.applyEdit(edit)
+        
+            const responseLines = (response.match(/\n/g) || []).length;
+            let startLine = fullLineRange.start.line;
+            let endLine = fullLineRange.end.line;
+            if (startLine + responseLines < editor.document.lineCount) {
+                // Update endLine to the end of the last line of the response
+                endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
             }
         
-            // Create a new range that includes the entire lines
-            let fullLineRange = new vscode.Range(
+            // Update the range
+            fullLineRange = new vscode.Range(
                 startLine, 0,
                 endLine, editor.document.lineAt(endLine).range.end.character
             );
         
-            // Get the text of the entire lines
-            let text = editor.document.getText(fullLineRange);
-            // get the document that is open in the editor
-            const editor_document = editor.document;
-        
-            // send the text to the backend controller
-            let backend = new BackendController(editor_document.fileName, APIKEY)
-        
-            for await (const response of backend.onHighlight(text)) {
-                const edit = new vscode.WorkspaceEdit();
-        
-                // Replace the full lines with the response
-                edit.replace(editor.document.uri, fullLineRange, response)
-                await vscode.workspace.applyEdit(edit)
-        
-                const responseLines = (response.match(/\n/g) || []).length;
-                if (startLine + responseLines < editor.document.lineCount) {
-                    // Update endLine to the end of the last line of the response
-                    endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
-                }
-        
-                // Update the range
-                fullLineRange = new vscode.Range(
-                    startLine, 0,
-                    endLine, editor.document.lineAt(endLine).range.end.character
-                );
-        
-                vscode.window.showInformationMessage(response)
-            };
+            vscode.window.showInformationMessage(response)
+        };
+    }
+    
+    // Then call this function from your command:
+    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return; // Guard: if there's no active editor, exit early
         }
+    
+        const fullLineRange = getFullLineRange(editor);
+        if (!fullLineRange) {
+            return; // Guard: if the full line range could not be calculated, exit early
+        }
+    
+        const editor_document = editor.document;
+        let text = editor.document.getText(fullLineRange);
+        let backend = new BackendController(editor_document.fileName, APIKEY)
+        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
     });
 
     // Do not update tree when changing the position of cursor.
@@ -126,42 +133,35 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
-		const editor = vscode.window.activeTextEditor;
+        const editor = vscode.window.activeTextEditor;
 
-		if (editor) {
-            const selected = editor.selection;
-            const editor_document = editor.document;
-        
-            // Send request to backend with request for comment
-            let backend = new BackendController(editor_document.fileName, APIKEY)
-            
-            const start = selected.start;
-            const end = selected.end;
-
-            let fullLineRange = new vscode.Range(
-                start.line, 0,
-                end.line, editor.document.lineAt(end.line).range.end.character
-            );
-            // Get the range of the selected text
-            if (start.isBefore(end)){
-            const range = new vscode.Range(start, end);
-        
-            backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
-                //console.log(response);
-        
-                // Create a new edit to replace the selected text
-                const edit = new vscode.WorkspaceEdit();
-                edit.replace(editor.document.uri, range, response);
-        
-                // Apply the edit
-                vscode.workspace.applyEdit(edit);
-        
-                // Optionally, display a message
-                vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
-            });
-          }
+        if (!editor) {
+            return;
         }
-	});
+    
+        const fullLineRange = getFullLineRange(editor);
+            
+        if (!fullLineRange) {
+            return;
+        }
+
+        const editor_document = editor.document;
+        
+        // Send request to backend with request for comment
+        let backend = new BackendController(editor_document.fileName, APIKEY)
+        backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
+        
+            // Create a new edit to replace the selected text
+            const edit = new vscode.WorkspaceEdit();
+            edit.replace(editor.document.uri, fullLineRange, response);
+        
+            // Apply the edit
+            vscode.workspace.applyEdit(edit);
+        
+            // Optionally, display a message
+            vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
+        });
+    });
 
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {    
         const editor = vscode.window.activeTextEditor;

@@ -39,7 +39,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.deactivate = exports.activate = void 0;
 const vscode = __importStar(__webpack_require__(1));
 const BackendController_1 = __webpack_require__(2);
-const InputParser_1 = __webpack_require__(95);
 const APIKEY = "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";
 let activeEditor;
 let backend;
@@ -61,46 +60,57 @@ function highlightScope() {
 function activate(context) {
     console.log('Congratulations, your extension "easyprint" is now active!');
     let changeable = false;
-    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
-        var _a, e_1, _b, _c;
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            const inputParser = new InputParser_1.InputParser();
-            const selected = editor.selection;
-            let startLine = selected.start.line;
-            let endLine = selected.end.line;
-            if (!selected.start.isBefore(selected.end)) {
-                return;
-            }
-            let fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
-            let text = editor.document.getText(fullLineRange);
-            const editor_document = editor.document;
-            let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            try {
-                for (var _d = true, _e = __asyncValues(backend.onHighlight(text)), _f; _f = await _e.next(), _a = _f.done, !_a; _d = true) {
-                    _c = _f.value;
-                    _d = false;
-                    const response = _c;
-                    const edit = new vscode.WorkspaceEdit();
-                    edit.replace(editor.document.uri, fullLineRange, response);
-                    await vscode.workspace.applyEdit(edit);
-                    const responseLines = (response.match(/\n/g) || []).length;
-                    if (startLine + responseLines < editor.document.lineCount) {
-                        endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
-                    }
-                    fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
-                    vscode.window.showInformationMessage(response);
-                }
-            }
-            catch (e_1_1) { e_1 = { error: e_1_1 }; }
-            finally {
-                try {
-                    if (!_d && !_a && (_b = _e.return)) await _b.call(_e);
-                }
-                finally { if (e_1) throw e_1.error; }
-            }
-            ;
+    function getFullLineRange(editor) {
+        const selected = editor.selection;
+        let startLine = selected.start.line;
+        let endLine = selected.end.line;
+        if (!selected.start.isBefore(selected.end)) {
+            return null;
         }
+        return new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
+    }
+    async function applyEditsFromGenerator(generator, editor, fullLineRange) {
+        var _a, e_1, _b, _c;
+        try {
+            for (var _d = true, generator_1 = __asyncValues(generator), generator_1_1; generator_1_1 = await generator_1.next(), _a = generator_1_1.done, !_a; _d = true) {
+                _c = generator_1_1.value;
+                _d = false;
+                const response = _c;
+                const edit = new vscode.WorkspaceEdit();
+                edit.replace(editor.document.uri, fullLineRange, response);
+                await vscode.workspace.applyEdit(edit);
+                const responseLines = (response.match(/\n/g) || []).length;
+                let startLine = fullLineRange.start.line;
+                let endLine = fullLineRange.end.line;
+                if (startLine + responseLines < editor.document.lineCount) {
+                    endLine = editor.document.lineAt(startLine + responseLines).range.end.line;
+                }
+                fullLineRange = new vscode.Range(startLine, 0, endLine, editor.document.lineAt(endLine).range.end.character);
+                vscode.window.showInformationMessage(response);
+            }
+        }
+        catch (e_1_1) { e_1 = { error: e_1_1 }; }
+        finally {
+            try {
+                if (!_d && !_a && (_b = generator_1.return)) await _b.call(generator_1);
+            }
+            finally { if (e_1) throw e_1.error; }
+        }
+        ;
+    }
+    let keybindingHighlight = vscode.commands.registerCommand('easyprint.keybindingHighlight', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) {
+            return;
+        }
+        const fullLineRange = getFullLineRange(editor);
+        if (!fullLineRange) {
+            return;
+        }
+        const editor_document = editor.document;
+        let text = editor.document.getText(fullLineRange);
+        let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
+        await applyEditsFromGenerator(backend.onHighlight(text), editor, fullLineRange);
     });
     vscode.window.onDidChangeTextEditorSelection(() => {
         if (highlightMode) {
@@ -142,21 +152,18 @@ function activate(context) {
     let keybindingCommentRequest = vscode.commands.registerCommand('easyprint.keybindingCommentRequest', () => {
         const editor = vscode.window.activeTextEditor;
         if (editor) {
-            const selected = editor.selection;
+            const fullLineRange = getFullLineRange(editor);
+            if (!fullLineRange) {
+                return;
+            }
             const editor_document = editor.document;
             let backend = new BackendController_1.BackendController(editor_document.fileName, APIKEY);
-            const start = selected.start;
-            const end = selected.end;
-            let fullLineRange = new vscode.Range(start.line, 0, end.line, editor.document.lineAt(end.line).range.end.character);
-            if (start.isBefore(end)) {
-                const range = new vscode.Range(start, end);
-                backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
-                    const edit = new vscode.WorkspaceEdit();
-                    edit.replace(editor.document.uri, range, response);
-                    vscode.workspace.applyEdit(edit);
-                    vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
-                });
-            }
+            backend.onHighlightComment(editor_document.getText(fullLineRange)).then(response => {
+                const edit = new vscode.WorkspaceEdit();
+                edit.replace(editor.document.uri, fullLineRange, response);
+                vscode.workspace.applyEdit(edit);
+                vscode.window.showInformationMessage("Selected code replaced with AI-generated comment");
+            });
         }
     });
     let keybindingDelete = vscode.commands.registerCommand('easyprint.keybindingDelete', () => {
