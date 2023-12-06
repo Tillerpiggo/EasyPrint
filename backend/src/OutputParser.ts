@@ -106,7 +106,27 @@ export class OutputParser {
     return code;
   }
 
-  parse_comments(apiResponse: string, lines: number[]):string {
+//   parse_comments(apiResponse: string, lines: number[]):string {
+//       // Split the response into lines
+//       let responseLines = apiResponse.split('\n');
+
+//       // Filter in lines within code blocks, excluding the code block delimiters
+//       let inCodeBlock = false;
+//       let extractedCode = responseLines.filter(line => {
+//         if (line.trim().startsWith('```')) {
+//           inCodeBlock = !inCodeBlock;
+//           return false; // Skip the code block delimiters
+//         }
+//         return inCodeBlock;
+//       });
+//     // Join the extracted code lines back into a single string
+//     return extractedCode.join('\n');
+//   }
+  parse_comments(code: string, apiResponse: string, lines: number[]):string {
+    let codeLines = code.split('\n');
+    let firstNonEmptyLine = codeLines.find(line => line.trim().length > 0);
+    let indentation = firstNonEmptyLine?.match(/^\s*/) || '';
+
       // Split the response into lines
       let responseLines = apiResponse.split('\n');
 
@@ -119,7 +139,22 @@ export class OutputParser {
         }
         return inCodeBlock;
       });
-    // Join the extracted code lines back into a single string
-    return extractedCode.join('\n');
+
+    // Remove any indentation the AI added, then add our own indentation
+    let firstNonEmptyResponseLine = extractedCode.find(line => line.trim().length > 0);
+    let unwantedIndentation = firstNonEmptyResponseLine?.match(/^\s*/) || '';
+    if(unwantedIndentation[0]) {
+        extractedCode = extractedCode.map(line => {
+            if(line.startsWith(unwantedIndentation[0])) {
+                return line.substring(unwantedIndentation[0].length);
+            }
+            return line;
+        });
+    }
+    
+    // Add back our indentation
+    let indentedCode = extractedCode.map(line => indentation + line);
+    return indentedCode.join('\n');
   }
+
 }

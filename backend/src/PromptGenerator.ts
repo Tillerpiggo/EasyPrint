@@ -8,6 +8,22 @@ export class PromptGenerator {
   }
 
   generate(promptType: PromptType, code: string): string {
+    // Remove indentation from the code
+    let codeLines = code.split('\n');
+    let firstNonEmptyLine = codeLines.find(line => line.trim().length > 0);
+    let indentation = firstNonEmptyLine?.match(/^\s*/) || '';
+
+    console.log(`removing indentation: |${indentation}|`)
+
+    if(indentation[0]) {
+        codeLines = codeLines.map(line => {
+            if(line.startsWith(indentation[0])) {
+                return line.substring(indentation[0].length);
+            }
+            return line;
+        });
+    }
+
     let prompt = '';
     switch(promptType){
       case PromptType.SingleLine:
