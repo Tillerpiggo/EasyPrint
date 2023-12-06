@@ -22,7 +22,7 @@ export class PrintStatementGenerator {
         yield updatedCode;
       }
     } else if (promptType == PromptType.Comment) {
-      for await (const updatedCode of this.outputParser.processCommentTokens(code, responseGenerator, lines)) {
+      for await (const updatedCode of this.outputParser.processCommentTokens(code, responseGenerator, [0, 3, 5])) {
         yield updatedCode;
       }
     } else {

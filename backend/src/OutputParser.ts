@@ -160,49 +160,51 @@ async *processCommentTokens(code: string, tokenGenerator: AsyncGenerator<string,
     }
   }
   
-  // Function to parse tokens for comments
-  parseCommentToken(code: string, token: string, lines: number[]): string {
-    console.log(`token: ${token}`);
-  
-    if (this.tokensToSkip > 0) {
-      this.tokensToSkip--;
-      return code;
-    }
-  
-    if (token.startsWith('```')) {
-      this.isInsideCodeBlock = !this.isInsideCodeBlock;
-      if (this.isInsideCodeBlock) {
-        this.tokensToSkip = 2;
-        this.hasAddedCodeInCurrentBlock = false;
-      }
-      return code;
-    }
-  
-    if (this.isInsideCodeBlock) {
-      let indentedToken = token;
-  
-      if (token == '\n') {
-        this.currentLine++;
-        indentedToken = '\n';
-      }
-  
-      if (!this.hasAddedCodeInCurrentBlock) {
-        console.log("Adding inside current code block!!")
-        indentedToken = '\n' + indentedToken;
-        console.log(`Indented token: ${indentedToken}`)
-        this.hasAddedCodeInCurrentBlock = true;
-      }
-  
-      if(lines.includes(this.currentLine)) {
-        this.codeLines.splice(this.currentLine, 0, indentedToken.trim());
-        code = this.codeLines.join('\n');
-        console.log(`updatedCode: ${code}`)
-      }
-  
-      return code;
-    }
-  
+// Function to parse tokens for comments
+parseCommentToken(code: string, token: string, lines: number[]): string {
+  console.log(`comment token: ${token}`);
+
+  if (this.tokensToSkip > 0) {
+    this.tokensToSkip--;
     return code;
   }
+
+  if (token.startsWith('```')) {
+    this.isInsideCodeBlock = !this.isInsideCodeBlock;
+    if (this.isInsideCodeBlock) {
+      this.tokensToSkip = 2;
+      this.hasAddedCodeInCurrentBlock = false;
+    }
+    return code;
+  }
+
+  if (this.isInsideCodeBlock) {
+    let indentedToken = token;
+
+    if (token == '\n') {
+      this.currentLine++;
+      indentedToken = '\n';
+      return this.codeLines.join('\n')
+    }
+
+    if (!this.hasAddedCodeInCurrentBlock) {
+      console.log("Adding inside current code block!!")
+      indentedToken = indentedToken; // Append space before token for readability
+      console.log(`Indented token: ${indentedToken}`)
+      this.hasAddedCodeInCurrentBlock = true;
+    }
+    console.log(`lines: ${lines}`)
+
+    let line = lines[this.currentLine]
+    console.log(`Before modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
+    this.codeLines[line] += indentedToken;  // Append token to the existing line
+    code = this.codeLines.join('\n');
+    console.log(`After modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
+
+    return code;
+  }
+
+  return code;
+}
 
 }

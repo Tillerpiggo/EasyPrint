@@ -634,7 +634,7 @@ class PrintStatementGenerator {
             }
             else if (promptType == PromptType_1.PromptType.Comment) {
                 try {
-                    for (var _o = true, _p = __asyncValues(this.outputParser.processCommentTokens(code, responseGenerator, lines)), _q; _q = yield __await(_p.next()), _d = _q.done, !_d; _o = true) {
+                    for (var _o = true, _p = __asyncValues(this.outputParser.processCommentTokens(code, responseGenerator, [0, 3, 5])), _q; _q = yield __await(_p.next()), _d = _q.done, !_d; _o = true) {
                         _f = _q.value;
                         _o = false;
                         const updatedCode = _f;
@@ -735,7 +735,7 @@ class PromptGenerator {
                 prompt = `Add a print statement when the variable is initialized and each time its value changes within this code: "${code}". The print statement should display the current value of the variable.`;
                 break;
             case PromptType_1.PromptType.Comment:
-                prompt = "Follow these instructions TO THE LETTER: Literally just respond with 3 random java comments, each on their own line, in a code block.";
+                prompt = "Follow these instructions TO THE LETTER: Literally just respond with 3 random java comments, each on their own line.";
                 break;
             case PromptType_1.PromptType.Combinational:
                 prompt = `Place a print statement at the beginning and end of this loop and Add a print statement at the start of each branch in the conditional statements: "${code}". 
@@ -10259,7 +10259,7 @@ class OutputParser {
         });
     }
     parseCommentToken(code, token, lines) {
-        console.log(`token: ${token}`);
+        console.log(`comment token: ${token}`);
         if (this.tokensToSkip > 0) {
             this.tokensToSkip--;
             return code;
@@ -10277,18 +10277,20 @@ class OutputParser {
             if (token == '\n') {
                 this.currentLine++;
                 indentedToken = '\n';
+                return this.codeLines.join('\n');
             }
             if (!this.hasAddedCodeInCurrentBlock) {
                 console.log("Adding inside current code block!!");
-                indentedToken = '\n' + indentedToken;
+                indentedToken = indentedToken;
                 console.log(`Indented token: ${indentedToken}`);
                 this.hasAddedCodeInCurrentBlock = true;
             }
-            if (lines.includes(this.currentLine)) {
-                this.codeLines.splice(this.currentLine, 0, indentedToken.trim());
-                code = this.codeLines.join('\n');
-                console.log(`updatedCode: ${code}`);
-            }
+            console.log(`lines: ${lines}`);
+            let line = lines[this.currentLine];
+            console.log(`Before modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
+            this.codeLines[line] += indentedToken;
+            code = this.codeLines.join('\n');
+            console.log(`After modification code at line ${this.currentLine}: ${this.codeLines[this.currentLine - 1]}`);
             return code;
         }
         return code;
